@@ -24,6 +24,14 @@ public class EarthianCalendar extends Calendar {
     public static final int AQUARIUS = 10;
     public static final int PISCES = 11;
     
+    public static final int SUN = Calendar.SUNDAY;
+    public static final int LUNA = Calendar.MONDAY;
+    public static final int MARS = Calendar.TUESDAY;
+    public static final int MERCURY = Calendar.WEDNESDAY;
+    public static final int JUPITER = Calendar.THURSDAY;
+    public static final int VENUS = Calendar.FRIDAY;
+    public static final int SATURN = Calendar.SATURDAY;
+    
 
     protected void computeTime() {
         throw new UnsupportedOperationException("Not supported yet.");
@@ -32,11 +40,12 @@ public class EarthianCalendar extends Calendar {
 
     @Override
     protected void computeFields() {
+        long normal = time - EPOCH;
         Generation generation = new Generation(time);
         int yearIndex = generation.yearIndex(time - generation.start);
         fields[YEAR] = (int) generation.index * 33 + generation.yearIndex(time - generation.start);
-        int duoMonthIndex = (int) ((time - generation.yearStart(yearIndex)) / (61 * ONE_DAY));
-        int dayOfDuoMonth = (int) ((time - generation.yearStart(yearIndex)) % (61 * ONE_DAY) / ONE_DAY);
+        int duoMonthIndex = (int) ((time - generation.yearStart(yearIndex)) / (61 * MILLIS_PER_DAY));
+        int dayOfDuoMonth = (int) ((time - generation.yearStart(yearIndex)) % (61 * MILLIS_PER_DAY) / MILLIS_PER_DAY);
         if (dayOfDuoMonth < 30) {
             fields[MONTH] = duoMonthIndex * 2;
             fields[DAY_OF_MONTH] = dayOfDuoMonth + 1;
@@ -45,6 +54,12 @@ public class EarthianCalendar extends Calendar {
             fields[MONTH] = duoMonthIndex * 2 + 1;
             fields[DAY_OF_MONTH] = dayOfDuoMonth - 29;            
         }
+        fields[DAY_OF_YEAR] = (int) ((time - generation.yearStart(yearIndex)) / MILLIS_PER_DAY) + 1;
+        int dayOfWeek = (int) ((normal / MILLIS_PER_DAY + MARS) % 7);
+        if (dayOfWeek < 0) {
+            dayOfWeek += 7;
+        }
+        fields[DAY_OF_WEEK] = dayOfWeek + 1;
     }
 
 
@@ -82,11 +97,11 @@ public class EarthianCalendar extends Calendar {
         
         Generation(long millis) {
             long normal = millis - EPOCH;
-            index = normal / ONE_GENERATION;
-            if (normal < 0 && normal % ONE_GENERATION != 0) {
+            index = normal / MILLIS_PER_GENERATION;
+            if (normal < 0 && normal % MILLIS_PER_GENERATION != 0) {
                 index--;
             }
-            start = EPOCH + index * ONE_GENERATION;
+            start = EPOCH + index * MILLIS_PER_GENERATION;
         }
         
         int yearIndex(long offset) {
@@ -120,7 +135,7 @@ public class EarthianCalendar extends Calendar {
 //                case 10: return 10 * ONE_YEAR + 2 * ONE_DAY;
 //                case 11: return 11 * ONE_YEAR + 3 * ONE_DAY;
 //            }
-            return yearIndex * ONE_YEAR + ((yearIndex + 1) / 4) * ONE_DAY;
+            return yearIndex * MILLIS_PER_YEAR + ((yearIndex + 1) / 4) * MILLIS_PER_DAY;
         }
         
         long start;
@@ -130,14 +145,14 @@ public class EarthianCalendar extends Calendar {
     private static final long EPOCH = 1174435200000L; // March 21, 2007 0h00"00' UTC 
     
     // A day has 1000 * 60 * 60 * 24 milliseconds
-    private static final long ONE_DAY = 1000 * 60 * 60 * 24;
-    private static final long ONE_YEAR = 365 * ONE_DAY;
-    private static final long TWO_YEARS = 2 * ONE_YEAR;
-    private static final long FOUR_YEARS = 4 * ONE_YEAR + ONE_DAY;
-    private static final long ONE_GENERATION = 33 * ONE_YEAR + 8 * ONE_DAY;
+    private static final long MILLIS_PER_DAY = 1000 * 60 * 60 * 24;
+    private static final long MILLIS_PER_YEAR = 365 * MILLIS_PER_DAY;
+//    private static final long TWO_YEARS = 2 * MILLIS_PER_YEAR;
+//    private static final long FOUR_YEARS = 4 * MILLIS_PER_YEAR + MILLIS_PER_DAY;
+    private static final long MILLIS_PER_GENERATION = 33 * MILLIS_PER_YEAR + 8 * MILLIS_PER_DAY;
 
-    private static final int DAYS_PER_GENERATION = 33 * 365 + 8;
+//    private static final int DAYS_PER_GENERATION = 33 * 365 + 8;
  
-    private static final long serialVersionUID = 1L;
+//    private static final long serialVersionUID = 1L;
    
 }
