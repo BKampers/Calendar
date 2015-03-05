@@ -41,11 +41,16 @@ public class EarthianCalendar extends Calendar {
     @Override
     protected void computeFields() {
         long normal = time - EPOCH;
-        Generation generation = new Generation(time);
-        int yearIndex = generation.yearIndex(time - generation.start);
-        fields[YEAR] = (int) generation.index * 33 + generation.yearIndex(time - generation.start);
-        int duoMonthIndex = (int) ((time - generation.yearStart(yearIndex)) / (61 * MILLIS_PER_DAY));
-        int dayOfDuoMonth = (int) ((time - generation.yearStart(yearIndex)) % (61 * MILLIS_PER_DAY) / MILLIS_PER_DAY);
+        long generationIndex = normal / MILLIS_PER_GENERATION;
+        if (normal < 0 && normal % MILLIS_PER_GENERATION != 0) {
+            generationIndex--;
+        }
+        long generationStart = EPOCH + generationIndex * MILLIS_PER_GENERATION;
+        int yearIndex = yearIndex(time - generationStart);
+        long yearStart = generationStart + yearOffset(yearIndex);
+        fields[YEAR] = (int) generationIndex * 33 + yearIndex(time - generationStart);
+        int duoMonthIndex = (int) ((time - yearStart) / (61 * MILLIS_PER_DAY));
+        int dayOfDuoMonth = (int) ((time - yearStart) % (61 * MILLIS_PER_DAY) / MILLIS_PER_DAY);
         if (dayOfDuoMonth < 30) {
             fields[MONTH] = duoMonthIndex * 2;
             fields[DAY_OF_MONTH] = dayOfDuoMonth + 1;
@@ -54,12 +59,16 @@ public class EarthianCalendar extends Calendar {
             fields[MONTH] = duoMonthIndex * 2 + 1;
             fields[DAY_OF_MONTH] = dayOfDuoMonth - 29;            
         }
-        fields[DAY_OF_YEAR] = (int) ((time - generation.yearStart(yearIndex)) / MILLIS_PER_DAY) + 1;
-        int dayOfWeek = (int) ((normal / MILLIS_PER_DAY + MARS) % 7);
+        fields[DAY_OF_YEAR] = (int) ((time - yearStart) / MILLIS_PER_DAY) + 1;
+        int dayOfWeek = (int) ((normal / MILLIS_PER_DAY + (MERCURY-1)) % 7);
         if (dayOfWeek < 0) {
             dayOfWeek += 7;
         }
         fields[DAY_OF_WEEK] = dayOfWeek + 1;
+        int weekOfYear = (fields[DAY_OF_YEAR] - fields[DAY_OF_WEEK] + 10) / 7;
+        if (weekOfYear < 1) {
+            
+        }
     }
 
 
@@ -93,55 +102,21 @@ public class EarthianCalendar extends Calendar {
     }
 
     
-    private class Generation {
-        
-        Generation(long millis) {
-            long normal = millis - EPOCH;
-            index = normal / MILLIS_PER_GENERATION;
-            if (normal < 0 && normal % MILLIS_PER_GENERATION != 0) {
-                index--;
-            }
-            start = EPOCH + index * MILLIS_PER_GENERATION;
+    private int yearIndex(long offset) {
+        int i = 1;
+        while (yearOffset(i) <= offset) {
+            i++;
         }
-        
-        int yearIndex(long offset) {
-//            double calc = (offset - 0.25*ONE_DAY)/(0.25*ONE_DAY+ONE_YEAR);
-//            int yearIndex = (int) calc;
-//            return yearIndex % 33;
-            int i = 1;
-            while (yearOffset(i) <= offset) {
-                i++;
-            }
-            return i - 1;
-        }
-        
-        long yearStart(int yearIndex) {
-            assert 0 <= yearIndex && yearIndex <= 32;
-            return start + yearOffset(yearIndex);
-        }
-        
-        long yearOffset(int yearIndex) {
-//            switch (yearIndex) {
-//                case  0: return  0 * ONE_YEAR;
-//                case  1: return  1 * ONE_YEAR;
-//                case  2: return  2 * ONE_YEAR;
-//                case  3: return  3 * ONE_YEAR + 1 * ONE_DAY;
-//                case  4: return  4 * ONE_YEAR + 1 * ONE_DAY;
-//                case  5: return  5 * ONE_YEAR + 1 * ONE_DAY;
-//                case  6: return  6 * ONE_YEAR + 1 * ONE_DAY;
-//                case  7: return  7 * ONE_YEAR + 2 * ONE_DAY;
-//                case  8: return  8 * ONE_YEAR + 2 * ONE_DAY;
-//                case  9: return  9 * ONE_YEAR + 2 * ONE_DAY;
-//                case 10: return 10 * ONE_YEAR + 2 * ONE_DAY;
-//                case 11: return 11 * ONE_YEAR + 3 * ONE_DAY;
-//            }
-            return yearIndex * MILLIS_PER_YEAR + ((yearIndex + 1) / 4) * MILLIS_PER_DAY;
-        }
-        
-        long start;
-        long index;
+        assert 1 <= i && i <= 33; 
+        return i - 1;
     }
-    
+
+
+    private long yearOffset(int yearIndex) {
+        return yearIndex * MILLIS_PER_YEAR + ((yearIndex + 1) / 4) * MILLIS_PER_DAY;
+    }
+        
+
     private static final long EPOCH = 1174435200000L; // March 21, 2007 0h00"00' UTC 
     
     // A day has 1000 * 60 * 60 * 24 milliseconds
