@@ -48,6 +48,7 @@ public class EarthianCalendar extends Calendar {
         long generationStart = EPOCH + generationIndex * MILLIS_PER_GENERATION;
         int yearIndex = yearIndex(time - generationStart);
         long yearStart = generationStart + yearOffset(yearIndex);
+        fields[ERA] = 0;
         fields[YEAR] = (int) generationIndex * 33 + yearIndex(time - generationStart);
         int duoMonthIndex = (int) ((time - yearStart) / (61 * MILLIS_PER_DAY));
         int dayOfDuoMonth = (int) ((time - yearStart) % (61 * MILLIS_PER_DAY) / MILLIS_PER_DAY);
@@ -69,6 +70,7 @@ public class EarthianCalendar extends Calendar {
         if (weekOfYear < 1) {
             
         }
+        computeTimeFields();
     }
 
 
@@ -114,6 +116,21 @@ public class EarthianCalendar extends Calendar {
 
     private long yearOffset(int yearIndex) {
         return yearIndex * MILLIS_PER_YEAR + ((yearIndex + 1) / 4) * MILLIS_PER_DAY;
+    }
+    
+    
+    private void computeTimeFields() {
+        int millis = (int) (time % MILLIS_PER_DAY);
+        if (millis < 0) {
+            millis += MILLIS_PER_DAY;
+        }
+        int hourOfDay = millis % (24 * 60 * 60 * 1000) / (60 * 60 * 1000);
+        fields[AM_PM] = (hourOfDay < 12) ? AM : PM;
+        fields[HOUR] = hourOfDay % 12;
+        fields[HOUR_OF_DAY] = hourOfDay;
+        fields[MINUTE] = millis % (60 * 60 * 1000) / (60 * 1000);
+        fields[SECOND] = millis % (60 * 1000) / 1000;
+        fields[MILLISECOND] = millis % 1000;
     }
         
 

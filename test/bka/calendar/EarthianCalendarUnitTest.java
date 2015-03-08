@@ -124,9 +124,33 @@ public class EarthianCalendarUnitTest {
     
     
     @Test
+    public void timeTest() {
+        GregorianCalendar gregorian = new GregorianCalendar();
+        gregorian.setTimeZone(TimeZone.getTimeZone("UTC"));
+        for (long millis = -10000000000L; millis < 10000000000L; millis += 123456789L) {
+            gregorian.setTimeInMillis(millis);
+            calendar.setTimeInMillis(millis);
+            for (int field = Calendar.AM_PM; field <= Calendar.MILLISECOND; ++field) {
+               assertEquals(gregorian.get(field), calendar.get(field));
+            }
+        }
+    }
+    
+    
+    @Test
     public void nowTest() {
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        System.out.printf("%04d/%02d/%02d\n", calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DATE));
+        calendar.setTimeInMillis(System.currentTimeMillis() + 1000L * 60L * 60L);
+        System.out.printf(
+            "%04d/%02d/%02d %d:%02d'%02d.%03d\" %s\n",
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH) + 1,
+            calendar.get(Calendar.DATE),
+            ((calendar.get(Calendar.HOUR) != 0) ? calendar.get(Calendar.HOUR) : 12),
+            calendar.get(Calendar.MINUTE),
+            calendar.get(Calendar.SECOND),
+            calendar.get(Calendar.MILLISECOND),
+            ((calendar.get(Calendar.AM_PM) == Calendar.AM) ? "AM" : "PM")
+            );
     }
         
     
