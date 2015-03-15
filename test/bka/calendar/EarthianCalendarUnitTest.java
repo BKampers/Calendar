@@ -141,7 +141,7 @@ public class EarthianCalendarUnitTest {
     public void nowTest() {
         calendar.setTimeInMillis(System.currentTimeMillis() + 1000L * 60L * 60L);
         System.out.printf(
-            "%04d/%02d/%02d %d:%02d'%02d.%03d\" %s\n",
+            "%04d/%02d/%02d %d:%02d:%02d.%03d %s\n",
             calendar.get(Calendar.YEAR),
             calendar.get(Calendar.MONTH) + 1,
             calendar.get(Calendar.DATE),

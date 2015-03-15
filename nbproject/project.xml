@@ -6,6 +6,7 @@
             <name>Calendar</name>
             <source-roots>
                 <root id="src.dir"/>
+                <root id="src.resouces.dir"/>
             </source-roots>
             <test-roots>
                 <root id="test.src.dir"/>

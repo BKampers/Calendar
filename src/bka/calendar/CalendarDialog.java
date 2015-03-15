@@ -4,9 +4,13 @@
 package bka.calendar;
 
 import bka.swing.clock.*;
+
 import java.awt.*;
 import java.awt.image.*;
+import java.lang.reflect.*;
 import java.util.Calendar;
+import java.util.ResourceBundle;
+import java.util.logging.*;
 
 
 public class CalendarDialog extends javax.swing.JDialog {
@@ -14,30 +18,34 @@ public class CalendarDialog extends javax.swing.JDialog {
 
     public CalendarDialog(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
+        hourMaximum = calendar.getMaximum(Calendar.HOUR) + 1;
+        minuteMaximum = calendar.getMaximum(Calendar.MINUTE) + 1;
+        secondMaximum = calendar.getMaximum(Calendar.SECOND) + 1;
+        bundle = getBundle();
         initComponents();
         clock.setDiameter(100);
         clock.setBackground(Color.WHITE);
         java.awt.Point center = new java.awt.Point(50, 50);
         Scale hourHandScale = new Scale();
-        hourHandScale.setValueRange(0, 10);
+        hourHandScale.setValueRange(0, hourMaximum);
         hourHand.setLength(25);
         hourHand.setStroke(new BasicStroke(3, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         hourHand.setTurningPoint(center);
         hourHand.setScale(hourHandScale);
         Scale minuteHandScale = new Scale();
-        minuteHandScale.setValueRange(0, 100);
+        minuteHandScale.setValueRange(0, minuteMaximum);
         minuteHand.setLength(40);
         minuteHand.setStroke(new BasicStroke(2, BasicStroke.CAP_ROUND, BasicStroke.JOIN_ROUND));
         minuteHand.setTurningPoint(center);
         minuteHand.setScale(minuteHandScale);
         Scale secondHandScale = new Scale();
-        secondHandScale.setValueRange(0, 100);
+        secondHandScale.setValueRange(0, secondMaximum);
         secondHand.setLength(45);
         secondHand.setTurningPoint(center);
         secondHand.setScale(secondHandScale);
         Scale hourValueScale = new Scale();
-        hourValueScale.setValueRange(1, 10);
-        hourValueScale.setAngleRange(1.0/10.0, 1.0);
+        hourValueScale.setValueRange(1, hourMaximum);
+        hourValueScale.setAngleRange(1.0 / hourMaximum, 1.0);
         SimpleValueRing hourRing = new SimpleValueRing();
         hourRing.setScale(hourValueScale);
         hourRing.setRadius(37);
@@ -50,6 +58,15 @@ public class CalendarDialog extends javax.swing.JDialog {
         clock.addRing(hourRing);
         clockPanel.add(clock);
         timer.schedule(new UpdateTask(), 1000 - System.currentTimeMillis() % 1000, 1000);
+    }
+
+    private ResourceBundle getBundle() {
+        try {
+            return ResourceBundle.getBundle("bka/calendar/" + calendar.getClass().getSimpleName());
+        }
+        catch (java.util.MissingResourceException ex) {
+            return null;
+        }
     }
 
     /**
@@ -68,7 +85,7 @@ public class CalendarDialog extends javax.swing.JDialog {
         monthLabel = new javax.swing.JLabel();
         topPanel = new javax.swing.JPanel();
         yearLabel = new javax.swing.JLabel();
-        décadeLabel = new javax.swing.JLabel();
+        weekLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Calendrier républicain");
@@ -99,9 +116,9 @@ public class CalendarDialog extends javax.swing.JDialog {
         yearLabel.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         topPanel.add(yearLabel);
 
-        décadeLabel.setForeground(DEFAULT_FOREGROUND);
-        décadeLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        topPanel.add(décadeLabel);
+        weekLabel.setForeground(DEFAULT_FOREGROUND);
+        weekLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        topPanel.add(weekLabel);
 
         getContentPane().add(topPanel, java.awt.BorderLayout.NORTH);
 
@@ -141,6 +158,7 @@ public class CalendarDialog extends javax.swing.JDialog {
 
         /* Create and display the dialog */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 CalendarDialog dialog = new CalendarDialog(new javax.swing.JFrame(), true);
                 dialog.addWindowListener(new java.awt.event.WindowAdapter() {
@@ -160,13 +178,13 @@ public class CalendarDialog extends javax.swing.JDialog {
         Graphics2D graphics = (Graphics2D) image.getGraphics();
         graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         graphics.setColor(Color.WHITE);
-        graphics.fillRect(10,10, 80, 80);
+        graphics.fillRect(10, 10, 80, 80);
         graphics.setColor(Color.GRAY);
-        graphics.drawRect(10,10, 80, 80);
+        graphics.drawRect(10, 10, 80, 80);
         graphics.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 30));
         FontMetrics metrics = graphics.getFontMetrics();
         int x = 50 - metrics.stringWidth(date) / 2;
-        graphics.setColor(décadi || complementaryDays ? HOLYDAY_FOREGROUND : DEFAULT_FOREGROUND);
+        graphics.setColor(isSabbath() ? HOLYDAY_FOREGROUND : DEFAULT_FOREGROUND);
         graphics.drawString(date, x, 50);
         if (! complementaryDays) {
             graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));        
@@ -184,88 +202,99 @@ public class CalendarDialog extends javax.swing.JDialog {
     }
 
     
+    @SuppressWarnings({ "rawtypes", "unchecked" })
     private void setDockIconImage(BufferedImage image) {
         try {
             Class applicationClass = Class.forName("com.apple.eawt.Application");
-            java.lang.reflect.Method getApplication = applicationClass.getMethod("getApplication");
-            Object application = getApplication.invoke(null);
-            java.lang.reflect.Method setDockIconImage = applicationClass.getMethod("setDockIconImage", Image.class);
+            Method getApplication = applicationClass.getMethod("getApplication");
+            Object application;
+            application = getApplication.invoke(null);
+            Method setDockIconImage = applicationClass.getMethod("setDockIconImage", Image.class);
             Object[] imageParameter = new Object[] { image };
             setDockIconImage.invoke(application, imageParameter);
         }
-        catch (Exception ex) {
-            ex.printStackTrace(System.err);
+        catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
+            Logger.getLogger(CalendarDialog.class.getName()).log(Level.INFO, "Mac dock icon set failed", ex);
         }
     }
     
     
-    private String monthName(int month) {
-        switch (month) {
-            case FrenchRepublicanCalendar.VENDÉMIAIRE           : return "Vendémiaire";
-            case FrenchRepublicanCalendar.BRUMAIRE              : return "Brumaire";
-            case FrenchRepublicanCalendar.FRIMAIRE              : return "Frimaire";
-            case FrenchRepublicanCalendar.NIVÔSE                : return "Nivôse";
-            case FrenchRepublicanCalendar.PLUVIÔSE              : return "Pluviôse";
-            case FrenchRepublicanCalendar.VENTÔSE               : return "Ventôse";
-            case FrenchRepublicanCalendar.GERMINAL              : return "Germinal";
-            case FrenchRepublicanCalendar.FLORÉAL               : return "Floréal";
-            case FrenchRepublicanCalendar.PRAIRIAL              : return "Prairial";
-            case FrenchRepublicanCalendar.MESSIDOR              : return "Messidor";
-            case FrenchRepublicanCalendar.THERMIDOR             : return "Thermidor";
-            case FrenchRepublicanCalendar.FRUCTIDOR             : return "Fructidor";
-            case FrenchRepublicanCalendar.JOURS_COMPLÉMENTAIRES : return "Jours complémentaires";
-            default                                             : return null;
+    private String yearText() {
+        if (calendar instanceof FrenchRepublicanCalendar) {
+            return roman(calendar.get(Calendar.YEAR));
+        }
+        else {
+            return Integer.toString(calendar.get(Calendar.YEAR));
         }
     }
 
     
-    private String weekdayName(int dayOfWeek) {
-        switch (dayOfWeek) {
-            case FrenchRepublicanCalendar.PRIMIDI  : return "Primidi";
-            case FrenchRepublicanCalendar.DUODI    : return "Duodi";
-            case FrenchRepublicanCalendar.TRIDI    : return "Tridi";
-            case FrenchRepublicanCalendar.QUARTIDI : return "Quartidi";
-            case FrenchRepublicanCalendar.QUINTIDI : return "Quintidi";
-            case FrenchRepublicanCalendar.SEXTIDI  : return "Sextidi";
-            case FrenchRepublicanCalendar.SEPTIDI  : return "Septidi";
-            case FrenchRepublicanCalendar.OCTIDI   : return "Octidi";
-            case FrenchRepublicanCalendar.NONIDI   : return "Nonidi";
-            case FrenchRepublicanCalendar.DÉCADI   : return "Décadi";
-            default                                : return null;
+    private String weekText() {
+        StringBuilder text = new StringBuilder((calendar instanceof FrenchRepublicanCalendar) ? "Décade" : "Week");
+        text.append(' ');
+        text.append(calendar.get(Calendar.WEEK_OF_YEAR));
+        return text.toString();
+    }
+
+    
+    private String monthText() {
+        if (bundle != null) {
+            return bundle.getString("MONTH" + Integer.toString(calendar.get(Calendar.MONTH)));
+        }
+        else {
+            java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("MMMM");
+            return format.format(calendar.getTime());
+        }
+    }
+    
+    
+    private String weekdayText() {
+        if (bundle != null) {
+            return bundle.getString("WEEKDAY" + Integer.toString(calendar.get(Calendar.DAY_OF_WEEK)));
+        }
+        else {
+            java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("EEEE");
+            return format.format(calendar.getTime());
         }
     }
 
 
-    private String complementaryDayName(int dayOfMonth) {
-        switch (dayOfMonth) {
-            case 1  : return "Jour de la vertu";
-            case 2  : return "Jour du génie";
-            case 3  : return "Jour du travail";
-            case 4  : return "Jour de l'opinion";
-            case 5  : return "Jour des récompenses";
-            case 6  : return "Jour de la révolution";
-            default : return null;
+    private String complementaryDayText() {
+        if (bundle != null) {
+            return bundle.getString("DAY" + Integer.toString(calendar.get(Calendar.DAY_OF_YEAR)));
+        }
+        else {
+            return "";
+        }
+    }
+    
+    
+    private boolean isSabbath() {
+        if (calendar instanceof FrenchRepublicanCalendar) {
+            return calendar.get(Calendar.DAY_OF_WEEK) == FrenchRepublicanCalendar.DÉCADI || calendar.get(Calendar.MONTH) == FrenchRepublicanCalendar.JOURS_COMPLÉMENTAIRES;
+        }
+        else {
+            return calendar.get(Calendar.DAY_OF_WEEK) == Calendar.SUNDAY;
         }
     }
     
     
     // Parallel arrays used in the conversion process.
-    private static final String[] RCODE = {"M", "CM", "D", "CD", "C", "XC", "L",
-                                           "XL", "X", "IX", "V", "IV", "I"};
-    private static final int[]    BVAL  = {1000, 900, 500, 400,  100,   90,  50,
-                                           40,   10,    9,   5,   4,    1};
+    private static final String[] RCODE = { "M", "CM", "D", "CD", "C", "XC", "L", "XL", "X", "IX", "V", "IV", "I"};
+    private static final int[] BVAL  = {1000, 900, 500, 400, 100, 90, 50, 40, 10, 9, 5, 4, 1};
     
-    private String roman(int binary) {
+    private String roman(final int binary) {
         if (binary <= 0 || binary >= 4000) {
             throw new NumberFormatException("Value outside roman numeral range.");
         }
-        String roman = "";         // Roman notation will be accumualated here.
+        String roman = ""; // Roman notation will be accumualated here.
         
         // Loop from biggest value to smallest, successively subtracting,
         // from the binary value while adding to the roman representation.
+        int remain = binary;
         for (int i = 0; i < RCODE.length; i++) {
-            while (binary >= BVAL[i]) {
-                binary -= BVAL[i];
+            while (remain >= BVAL[i]) {
+                remain -= BVAL[i];
                 roman  += RCODE[i];
             }
         }
@@ -273,42 +302,36 @@ public class CalendarDialog extends javax.swing.JDialog {
     }
     
     
-//    private void scheduleUpdate() {
-//        timer.schedule(new UpdateTask(), 1000 - System.currentTimeMillis() % 1000);
-//    }
-    
     private class UpdateTask extends java.util.TimerTask {
 
+        @Override
         public void run() {
             calendar.setTimeInMillis(System.currentTimeMillis());
             int month = calendar.get(Calendar.MONTH);
             int dayOfMonth = calendar.get(Calendar.DATE);
-            int dayOfWeek = calendar.get(Calendar.DAY_OF_WEEK);
-            int hour = calendar.get(Calendar.HOUR_OF_DAY);
+            int hour = calendar.get(Calendar.HOUR);
             int minute = calendar.get(Calendar.MINUTE);
             int second = calendar.get(Calendar.SECOND);
             String dateString = Integer.toString(dayOfMonth);
             dateLabel.setText(dateString);
             String monthString;
             complementaryDays = month == FrenchRepublicanCalendar.JOURS_COMPLÉMENTAIRES;
-            monthString = monthName(month);
-            String dayName = (! complementaryDays) ? weekdayName(dayOfWeek) : complementaryDayName(dayOfMonth);
+            monthString = monthText();
+            String dayName = (! complementaryDays) ? weekdayText() : complementaryDayText();
             weekdayLabel.setText(dayName);
-            décadi = dayOfWeek == FrenchRepublicanCalendar.DÉCADI;
-            weekdayLabel.setForeground((décadi || complementaryDays) ? HOLYDAY_FOREGROUND : DEFAULT_FOREGROUND);
-            monthLabel.setText((! complementaryDays) ? monthString : "");
-            yearLabel.setText(roman(calendar.get(Calendar.YEAR)));
-            décadeLabel.setText("Décade " + Integer.toString(calendar.get(Calendar.WEEK_OF_YEAR)));
-            double minuteValue = minute + second / 100.0;
+            weekdayLabel.setForeground((isSabbath()) ? HOLYDAY_FOREGROUND : DEFAULT_FOREGROUND);
+            monthLabel.setText((! complementaryDays) ? monthText() : "");
+            yearLabel.setText(yearText());
+            weekLabel.setText(weekText());
+            double minuteValue = minute + (double) second / secondMaximum;
             secondHand.setValue(second);
             minuteHand.setValue(minuteValue);
-            hourHand.setValue(hour + minuteValue / 100.0);
+            hourHand.setValue(hour + minuteValue / minuteMaximum);
             clock.repaint();
             if (iconDate != dayOfMonth) {
                 setIcon(dateString, (! complementaryDays) ? monthString : dayName);
                 iconDate = dayOfMonth;
             }
-            //scheduleUpdate();
         }
 
     }
@@ -318,23 +341,28 @@ public class CalendarDialog extends javax.swing.JDialog {
     private javax.swing.JPanel clockPanel;
     private javax.swing.JLabel dateLabel;
     private javax.swing.JPanel datePanel;
-    private javax.swing.JLabel décadeLabel;
     private javax.swing.JLabel monthLabel;
     private javax.swing.JPanel topPanel;
+    private javax.swing.JLabel weekLabel;
     private javax.swing.JLabel weekdayLabel;
     private javax.swing.JLabel yearLabel;
     // End of variables declaration//GEN-END:variables
 
     private final SimpleClock clock = new SimpleClock();
-    private final  SimpleNeedle hourHand = new SimpleNeedle();
+    private final SimpleNeedle hourHand = new SimpleNeedle();
     private final SimpleNeedle minuteHand = new SimpleNeedle();
     private final SimpleNeedle secondHand = new SimpleNeedle();
     
-    private final FrenchRepublicanCalendar calendar = new FrenchRepublicanCalendar();
+    private final ResourceBundle bundle;
+    
+    private final Calendar calendar = new java.util.GregorianCalendar();
+    private final int hourMaximum;
+    private final int minuteMaximum;
+    private final int secondMaximum;
+    
     private final java.util.Timer timer = new java.util.Timer();
     
     private int iconDate = 0;
-    private boolean décadi = false;
     private boolean complementaryDays = false;
 
     private static final Color DEFAULT_FOREGROUND = new Color(0, 0, 153);

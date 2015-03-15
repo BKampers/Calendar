@@ -43,13 +43,6 @@ public class FrenchRepublicanCalendar extends Calendar {
     
     public static void main(String[] arguments) {
         clock();
-//        negativeDateTest();
-//        print(EPOCH - ONE_YEAR);
-//        print(EPOCH - ONE_YEAR - ONE_DAY);
-//        print(EPOCH - 2 * ONE_YEAR - ONE_DAY);
-//        print(EPOCH - 3 * ONE_YEAR);
-//        print(EPOCH - 4 * ONE_YEAR);
-//        print(EPOCH - FOUR_YEARS);
     }
     
     
