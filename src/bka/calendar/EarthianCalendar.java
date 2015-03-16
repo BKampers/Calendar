@@ -33,6 +33,7 @@ public class EarthianCalendar extends Calendar {
     public static final int SATURN = Calendar.SATURDAY;
     
 
+    @Override
     protected void computeTime() {
         throw new UnsupportedOperationException("Not supported yet.");
     }
@@ -74,31 +75,46 @@ public class EarthianCalendar extends Calendar {
     }
 
 
+    @Override
     public void add(int field, int amount) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
 
+    @Override
     public void roll(int field, boolean up) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
 
+    @Override
     public int getMinimum(int field) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
 
+    @Override
     public int getMaximum(int field) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        switch (field) {
+            case MILLISECOND: return 999;
+            case SECOND: return 59;
+            case MINUTE: return 59;
+            case HOUR: return 11;
+            case DAY_OF_WEEK: return 6;
+            case MONTH: return 11;
+            case YEAR: return Integer.MAX_VALUE;
+            default: return 0;
+        }
     }
 
 
+    @Override
     public int getGreatestMinimum(int field) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
 
 
+    @Override
     public int getLeastMaximum(int field) {
         throw new UnsupportedOperationException("Not supported yet.");
     }

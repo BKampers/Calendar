@@ -8,8 +8,7 @@ import bka.swing.clock.*;
 import java.awt.*;
 import java.awt.image.*;
 import java.lang.reflect.*;
-import java.util.Calendar;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.logging.*;
 
 
@@ -230,16 +229,23 @@ public class CalendarDialog extends javax.swing.JDialog {
 
     
     private String weekText() {
-        StringBuilder text = new StringBuilder((calendar instanceof FrenchRepublicanCalendar) ? "Décade" : "Week");
-        text.append(' ');
-        text.append(calendar.get(Calendar.WEEK_OF_YEAR));
-        return text.toString();
+        int week = calendar.get(Calendar.WEEK_OF_YEAR);
+        if (week > 0) {
+            StringBuilder text = new StringBuilder((calendar instanceof FrenchRepublicanCalendar) ? "Décade" : "Week");
+            text.append(' ');
+            text.append(week);
+            return text.toString();
+        }
+        else {
+            return "";
+        }
     }
 
     
     private String monthText() {
-        if (bundle != null) {
-            return bundle.getString("MONTH" + Integer.toString(calendar.get(Calendar.MONTH)));
+        String key = "MONTH" + Integer.toString(calendar.get(Calendar.MONTH));
+        if (bundle != null && bundle.containsKey(key)) {
+            return bundle.getString(key);
         }
         else {
             java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("MMMM");
@@ -249,8 +255,9 @@ public class CalendarDialog extends javax.swing.JDialog {
     
     
     private String weekdayText() {
-        if (bundle != null) {
-            return bundle.getString("WEEKDAY" + Integer.toString(calendar.get(Calendar.DAY_OF_WEEK)));
+        String key = "WEEKDAY" + Integer.toString(calendar.get(Calendar.DAY_OF_WEEK));
+        if (bundle != null && bundle.containsKey(key)) {
+            return bundle.getString(key);  
         }
         else {
             java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("EEEE");
@@ -355,7 +362,7 @@ public class CalendarDialog extends javax.swing.JDialog {
     
     private final ResourceBundle bundle;
     
-    private final Calendar calendar = new java.util.GregorianCalendar();
+    private final Calendar calendar = new EarthianCalendar();
     private final int hourMaximum;
     private final int minuteMaximum;
     private final int secondMaximum;
