@@ -5,7 +5,9 @@
 package bka.calendar;
 
 
-import java.util.Calendar;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 public class EarthianCalendar extends Calendar {
@@ -42,17 +44,22 @@ public class EarthianCalendar extends Calendar {
     @Override
     protected void computeFields() {
         long normal = time - EPOCH;
+        TimeZone timeZone = getTimeZone();
+        if (timeZone != null) {
+            Logger.getLogger(bka.calendar.EarthianCalendar.class.getSimpleName()).log(Level.FINE, timeZone.getDisplayName());
+            normal += timeZone.getOffset(time);
+        }
         long generationIndex = normal / MILLIS_PER_GENERATION;
         if (normal < 0 && normal % MILLIS_PER_GENERATION != 0) {
             generationIndex--;
         }
-        long generationStart = EPOCH + generationIndex * MILLIS_PER_GENERATION;
-        int yearIndex = yearIndex(time - generationStart);
+        long generationStart = generationIndex * MILLIS_PER_GENERATION;
+        int yearIndex = yearIndex(normal - generationStart);
         long yearStart = generationStart + yearOffset(yearIndex);
         fields[ERA] = 0;
-        fields[YEAR] = (int) generationIndex * 33 + yearIndex(time - generationStart);
-        int duoMonthIndex = (int) ((time - yearStart) / (61 * MILLIS_PER_DAY));
-        int dayOfDuoMonth = (int) ((time - yearStart) % (61 * MILLIS_PER_DAY) / MILLIS_PER_DAY);
+        fields[YEAR] = (int) generationIndex * 33 + yearIndex(normal - generationStart);
+        int duoMonthIndex = (int) ((normal - yearStart) / (61 * MILLIS_PER_DAY));
+        int dayOfDuoMonth = (int) ((normal - yearStart) % (61 * MILLIS_PER_DAY) / MILLIS_PER_DAY);
         if (dayOfDuoMonth < 30) {
             fields[MONTH] = duoMonthIndex * 2;
             fields[DAY_OF_MONTH] = dayOfDuoMonth + 1;
@@ -61,7 +68,7 @@ public class EarthianCalendar extends Calendar {
             fields[MONTH] = duoMonthIndex * 2 + 1;
             fields[DAY_OF_MONTH] = dayOfDuoMonth - 29;            
         }
-        fields[DAY_OF_YEAR] = (int) ((time - yearStart) / MILLIS_PER_DAY) + 1;
+        fields[DAY_OF_YEAR] = (int) ((normal - yearStart) / MILLIS_PER_DAY) + 1;
         int dayOfWeek = (int) ((normal / MILLIS_PER_DAY + (MERCURY-1)) % 7);
         if (dayOfWeek < 0) {
             dayOfWeek += 7;
@@ -71,7 +78,7 @@ public class EarthianCalendar extends Calendar {
         if (weekOfYear < 1) {
             
         }
-        computeTimeFields();
+        computeTimeFields((int) (normal % MILLIS_PER_DAY));
     }
 
 
@@ -135,8 +142,7 @@ public class EarthianCalendar extends Calendar {
     }
     
     
-    private void computeTimeFields() {
-        int millis = (int) (time % MILLIS_PER_DAY);
+    private void computeTimeFields(int millis) {
         if (millis < 0) {
             millis += MILLIS_PER_DAY;
         }

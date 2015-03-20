@@ -56,6 +56,7 @@ public class CalendarDialog extends javax.swing.JDialog {
         clock.addNeedle(secondHand);
         clock.addRing(hourRing);
         clockPanel.add(clock);
+        calendar.setTimeZone(TimeZone.getDefault());
         timer.schedule(new UpdateTask(), 1000 - System.currentTimeMillis() % 1000, 1000);
     }
 
