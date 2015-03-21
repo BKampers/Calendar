@@ -15,8 +15,9 @@ import java.util.logging.*;
 public class CalendarDialog extends javax.swing.JDialog {
 
 
-    public CalendarDialog(java.awt.Frame parent, boolean modal) {
-        super(parent, modal);
+    public CalendarDialog(java.awt.Frame parent, Calendar calendar) {
+        super(parent, true);
+        this.calendar = calendar;
         hourMaximum = calendar.getMaximum(Calendar.HOUR) + 1;
         minuteMaximum = calendar.getMaximum(Calendar.MINUTE) + 1;
         secondMaximum = calendar.getMaximum(Calendar.SECOND) + 1;
@@ -62,7 +63,7 @@ public class CalendarDialog extends javax.swing.JDialog {
 
     private ResourceBundle getBundle() {
         try {
-            return ResourceBundle.getBundle("bka/calendar/" + calendar.getClass().getSimpleName());
+            return ResourceBundle.getBundle(calendar.getClass().getName());
         }
         catch (java.util.MissingResourceException ex) {
             return null;
@@ -88,7 +89,7 @@ public class CalendarDialog extends javax.swing.JDialog {
         weekLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Calendrier républicain");
+        setTitle(nameText());
         setMinimumSize(new java.awt.Dimension(350, 250));
 
         clockPanel.setOpaque(false);
@@ -129,6 +130,16 @@ public class CalendarDialog extends javax.swing.JDialog {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
+        Calendar calendar = null;
+        if (args.length > 0) {
+            try {
+                calendar = (Calendar) Class.forName(args[0]).newInstance();
+            }
+            catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                Logger.getLogger(CalendarDialog.class.getName()).log(Level.ALL, null, ex);
+            }
+        }
+        
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
@@ -142,34 +153,15 @@ public class CalendarDialog extends javax.swing.JDialog {
                 }
             }
         }
-        catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(CalendarDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(CalendarDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(CalendarDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(CalendarDialog.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
 
+        //</editor-fold>
+
         /* Create and display the dialog */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                CalendarDialog dialog = new CalendarDialog(new javax.swing.JFrame(), true);
-                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                    @Override
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                dialog.setVisible(true);
-            }
-        });
+        java.awt.EventQueue.invokeLater(new Task(calendar));
     }
     
     
@@ -232,7 +224,13 @@ public class CalendarDialog extends javax.swing.JDialog {
     private String weekText() {
         int week = calendar.get(Calendar.WEEK_OF_YEAR);
         if (week > 0) {
-            StringBuilder text = new StringBuilder((calendar instanceof FrenchRepublicanCalendar) ? "Décade" : "Week");
+            StringBuilder text = new StringBuilder();
+            if (bundle != null && bundle.containsKey(WEEK_PROPERTY)) {
+                text.append(bundle.getString(WEEK_PROPERTY));
+            }
+            else {
+                text.append("Week");
+            }
             text.append(' ');
             text.append(week);
             return text.toString();
@@ -241,12 +239,23 @@ public class CalendarDialog extends javax.swing.JDialog {
             return "";
         }
     }
+    
+    
+    private String nameText() {
+        if (bundle != null && bundle.containsKey(NAME_PROPERTY)) {
+            return bundle.getString(NAME_PROPERTY);
+        }
+        else {
+            return calendar.getClass().getSimpleName();
+        }
+    }
 
     
     private String monthText() {
-        String key = "MONTH" + Integer.toString(calendar.get(Calendar.MONTH));
-        if (bundle != null && bundle.containsKey(key)) {
-            return bundle.getString(key);
+        StringBuilder key = new StringBuilder(MONTH_PROPERTY);
+        key.append(calendar.get(Calendar.MONTH));
+        if (bundle != null && bundle.containsKey(key.toString())) {
+            return bundle.getString(key.toString());
         }
         else {
             java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("MMMM");
@@ -256,7 +265,7 @@ public class CalendarDialog extends javax.swing.JDialog {
     
     
     private String weekdayText() {
-        String key = "WEEKDAY" + Integer.toString(calendar.get(Calendar.DAY_OF_WEEK));
+        String key = WEEKDAY_PROPERTY + Integer.toString(calendar.get(Calendar.DAY_OF_WEEK));
         if (bundle != null && bundle.containsKey(key)) {
             return bundle.getString(key);  
         }
@@ -269,7 +278,7 @@ public class CalendarDialog extends javax.swing.JDialog {
 
     private String complementaryDayText() {
         if (bundle != null) {
-            return bundle.getString("DAY" + Integer.toString(calendar.get(Calendar.DAY_OF_YEAR)));
+            return bundle.getString(DAY_PROPERTY + Integer.toString(calendar.get(Calendar.DAY_OF_YEAR)));
         }
         else {
             return "";
@@ -310,6 +319,29 @@ public class CalendarDialog extends javax.swing.JDialog {
     }
     
     
+    private static class Task implements Runnable {
+        
+        private Task(Calendar calendar) {
+            this.calendar = (calendar != null) ? calendar : GregorianCalendar.getInstance();
+        } 
+        
+        @Override
+        public void run() {
+            CalendarDialog dialog = new CalendarDialog(new javax.swing.JFrame(), calendar);
+            dialog.addWindowListener(new java.awt.event.WindowAdapter() {
+                @Override
+                public void windowClosing(java.awt.event.WindowEvent e) {
+                    System.exit(0);
+                }
+            });
+            dialog.setVisible(true);
+        }
+        
+        private final Calendar calendar;
+        
+    }
+
+    
     private class UpdateTask extends java.util.TimerTask {
 
         @Override
@@ -343,6 +375,9 @@ public class CalendarDialog extends javax.swing.JDialog {
         }
 
     }
+
+    
+    private final Calendar calendar;
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -363,7 +398,6 @@ public class CalendarDialog extends javax.swing.JDialog {
     
     private final ResourceBundle bundle;
     
-    private final Calendar calendar = new EarthianCalendar();
     private final int hourMaximum;
     private final int minuteMaximum;
     private final int secondMaximum;
@@ -375,4 +409,11 @@ public class CalendarDialog extends javax.swing.JDialog {
 
     private static final Color DEFAULT_FOREGROUND = new Color(0, 0, 153);
     private static final Color HOLYDAY_FOREGROUND = Color.RED;
+    
+    private static final String NAME_PROPERTY = "Name";
+    private static final String WEEK_PROPERTY = "Week";
+    private static final String MONTH_PROPERTY = "Month";
+    private static final String WEEKDAY_PROPERTY = "WeekDay";
+    private static final String DAY_PROPERTY = "Day";
+
 }
