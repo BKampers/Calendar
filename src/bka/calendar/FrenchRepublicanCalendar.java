@@ -61,6 +61,7 @@ public class FrenchRepublicanCalendar extends Calendar {
     @Override
     protected void computeFields() {
         fields[ERA] = (EPOCH <= time) ? 1 : 0;
+        isSet[ERA] = true;
         long remainder = time - LEAP_ORIGIN;
         int periodCount = (int) (remainder / FOUR_MILLENNIA);
         fields[YEAR] = periodCount * 4000;
@@ -90,36 +91,52 @@ public class FrenchRepublicanCalendar extends Calendar {
         }
         yearStart += periodCount * ONE_YEAR;
         fields[YEAR] += periodCount;
-        if (fields[ERA] == 0) {
-            //fields[YEAR]--;
+        isSet[YEAR] = true;
+//        if (fields[ERA] == 0) {
+//            //fields[YEAR]--;
 //            yearStart -= ONE_YEAR;
 //            if (isLeapYear(fields[YEAR])) {
 //                yearStart -= ONE_DAY;
 //            }
-        }
-        else {
-            //fields[YEAR]--;
-        }
+//        }
+//        else {
+//            //fields[YEAR]--;
+//        }
         int dayIndex = (int) ((time - yearStart) / ONE_DAY);
         fields[MONTH] = dayIndex / DAYS_PER_MONTH;
+        isSet[MONTH] = true;
         int weekIndex = dayIndex / DAYS_PER_WEEK;
         fields[WEEK_OF_YEAR] = weekIndex + 1;
+        isSet[WEEK_OF_YEAR] = true;
         fields[WEEK_OF_MONTH] = weekIndex % WEEKS_PER_MONTH + 1;
+        isSet[WEEK_OF_MONTH] = true;
         fields[DAY_OF_MONTH] = dayIndex % DAYS_PER_MONTH + 1;
+        isSet[DAY_OF_MONTH] = true;
         fields[DAY_OF_YEAR] = dayIndex + 1;
+        isSet[DAY_OF_YEAR] = true;
         fields[DAY_OF_WEEK] = dayIndex % DAYS_PER_WEEK;
+        isSet[DAY_OF_WEEK] = true;
         fields[DAY_OF_WEEK_IN_MONTH] = (fields[DAY_OF_MONTH] - 1) / DAYS_PER_WEEK + 1;
+        isSet[DAY_OF_WEEK_IN_MONTH] = true;
         long dayStart = yearStart + dayIndex * ONE_DAY;
         int milliOfDay = (int) ((time - dayStart) * (HOURS_PER_DAY * MINUTES_PER_HOUR * SECONDS_PER_MINUTE) / (24 * 60 * 60));
         int hourOfDay = milliOfDay / (1000 * 100 * 100);
         fields[AM_PM] = (hourOfDay < 5) ? AM : PM;
+        isSet[AM_PM] = true;
         fields[HOUR] = hourOfDay;
+        isSet[HOUR] = true;
         fields[HOUR_OF_DAY] = hourOfDay;
+        isSet[HOUR_OF_DAY] = true;
         fields[MINUTE] = milliOfDay / (1000 * 100) % MINUTES_PER_HOUR;
+        isSet[MINUTE] = true;
         fields[SECOND] = milliOfDay / 1000 % SECONDS_PER_MINUTE;
+        isSet[SECOND] = true;
         fields[MILLISECOND] = milliOfDay % 1000;
+        isSet[MILLISECOND] = true;
         fields[ZONE_OFFSET] = 0;
+        isSet[ZONE_OFFSET] = true;
         fields[DST_OFFSET] = 0;
+        isSet[DST_OFFSET] = true;
     }
 
     

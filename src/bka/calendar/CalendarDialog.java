@@ -1,6 +1,6 @@
 /*
- * Copyright © Bart Kampers
- */
+** Copyright © Bart Kampers
+*/
 package bka.calendar;
 
 import bka.swing.clock.*;
