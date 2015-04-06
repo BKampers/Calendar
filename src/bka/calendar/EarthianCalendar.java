@@ -93,7 +93,7 @@ public class EarthianCalendar extends Calendar {
             case YEAR: return Integer.MAX_VALUE;
             case MONTH: return 11;
             case WEEK_OF_YEAR: return 53;
-            case WEEK_OF_MONTH: return 4;
+            case WEEK_OF_MONTH: return 5;
             case DAY_OF_MONTH: return 31;
             case DAY_OF_YEAR: return 366;
             case DAY_OF_WEEK: return DAYS_PER_WEEK;
@@ -127,16 +127,25 @@ public class EarthianCalendar extends Calendar {
         long millisSinceYearStart = calculations.millisSinceEpoch - calculations.yearStart;
         int bimesterIndex = (int) (millisSinceYearStart / MILLIS_PER_BIMESTER);
         int dayOfBimesterIndex = (int) (millisSinceYearStart % MILLIS_PER_BIMESTER / MILLIS_PER_DAY);
-        if (dayOfBimesterIndex < 30) {
-            fields[MONTH] = bimesterIndex * 2;
-            fields[DAY_OF_MONTH] = dayOfBimesterIndex + 1;
+        int month = bimesterIndex * 2; 
+        int dayOfMonthIndex = dayOfBimesterIndex;
+        if (30 <= dayOfBimesterIndex) {
+            month++;
+            dayOfMonthIndex -= 30;
         }
-        else {
-            fields[MONTH] = bimesterIndex * 2 + 1;
-            fields[DAY_OF_MONTH] = dayOfBimesterIndex - 29;            
+        int dayOfMonthStart = dayOfWeekIndex(calculations.millisSinceEpoch - (long) dayOfMonthIndex * MILLIS_PER_DAY);
+        int weekOfMonth = (dayOfMonthIndex + dayOfMonthStart) / DAYS_PER_WEEK;
+        if (dayOfMonthStart < 4) {
+            weekOfMonth++;
         }
+        fields[MONTH] = month;
         isSet[MONTH] = true;
+        fields[DAY_OF_MONTH] = dayOfMonthIndex + 1;
         isSet[DAY_OF_MONTH] = true;
+        fields[WEEK_OF_MONTH] = weekOfMonth;
+        isSet[WEEK_OF_MONTH] = true;
+        fields[DAY_OF_WEEK_IN_MONTH] = dayOfMonthIndex / DAYS_PER_WEEK + 1;
+        isSet[DAY_OF_WEEK_IN_MONTH] = true;
     }
 
     
@@ -161,15 +170,15 @@ public class EarthianCalendar extends Calendar {
     
     
     private int weekOfYear(DateCalculations calculations) {
-        int yearStartDayOfWeekIndex = dayOfWeekIndex(calculations.yearStart);
-        if (yearStartDayOfWeekIndex < 4) {
-            return weekOfYear(calculations.dayOfYear + yearStartDayOfWeekIndex - 1, calculations);
+        int dayOfYearStart = dayOfWeekIndex(calculations.yearStart);
+        if (dayOfYearStart < 4) {
+            return weekOfYear(calculations.dayOfYear + dayOfYearStart - 1, calculations);
         }
-        else if (calculations.dayOfYear + yearStartDayOfWeekIndex > DAYS_PER_WEEK) {
-            return weekOfYear(calculations.dayOfYear + yearStartDayOfWeekIndex - DAYS_PER_WEEK - 1, calculations);
+        else if (calculations.dayOfYear + dayOfYearStart > DAYS_PER_WEEK) {
+            return weekOfYear(calculations.dayOfYear + dayOfYearStart - DAYS_PER_WEEK - 1, calculations);
         }
         else {
-            return weekOfYear(new DateCalculations(calculations.millisSinceEpoch - yearStartDayOfWeekIndex * MILLIS_PER_DAY));
+            return weekOfYear(new DateCalculations(calculations.millisSinceEpoch - dayOfYearStart * MILLIS_PER_DAY));
         }
     }
     

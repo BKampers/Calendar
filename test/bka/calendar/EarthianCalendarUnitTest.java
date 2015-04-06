@@ -98,6 +98,8 @@ public class EarthianCalendarUnitTest {
         int expectedDate = 13;
         int expectedDayOfYear = 287;
         int expectedDayOfWeek = EarthianCalendar.LUNA;
+        int expectedWeekOfMonth = 3;
+        int expectedDayOfWeekInMonth = 2;
         int expectedWeekOfYear = 42;
         int count = 1;
         while (expectedYear < 108)  {
@@ -108,25 +110,34 @@ public class EarthianCalendarUnitTest {
             assertEquals("Date" + message, expectedDate, calendar.get(Calendar.DATE));
             assertEquals("Day of Year" + message, expectedDayOfYear, calendar.get(Calendar.DAY_OF_YEAR));
             assertEquals("Day of Week" + message, expectedDayOfWeek, calendar.get(Calendar.DAY_OF_WEEK));
+            assertEquals("Week of Month" + message, expectedWeekOfMonth, calendar.get(Calendar.WEEK_OF_MONTH));
+            assertEquals("Day of Week in Month" + message, expectedDayOfWeekInMonth, calendar.get(Calendar.DAY_OF_WEEK_IN_MONTH));
             assertEquals("Week of Year" + message, expectedWeekOfYear, calendar.get(Calendar.WEEK_OF_YEAR));
             millis += 1000 * 60 * 60 * 24;
+            expectedDayOfWeek = (expectedDayOfWeek % 7) + 1;
             if (expectedDayOfYear == dayCount(expectedYear)) {
                 expectedYear++;
                 expectedMonth = EarthianCalendar.ARIES;
                 expectedDate = 1;
                 expectedDayOfYear = 1;
+                expectedWeekOfMonth = (1 < expectedDayOfWeek && expectedDayOfWeek < 5) ? 1 : 0;
+                expectedDayOfWeekInMonth = 1;
             }
             else {
                 if (expectedMonth % 2 == 0 && expectedDate == 30 || expectedDate == 31) {
                     expectedMonth++;
-                    expectedDate = 1;  
+                    expectedDate = 1;
+                    expectedWeekOfMonth = (1 < expectedDayOfWeek && expectedDayOfWeek < 5) ? 1 : 0;
+                    expectedDayOfWeekInMonth = 1;
                 }
                 else {
+                    if (expectedDate % 7 == 0) {
+                        expectedDayOfWeekInMonth++;
+                    }
                     expectedDate++;
                 }
                 expectedDayOfYear++;
             }
-            expectedDayOfWeek = (expectedDayOfWeek % 7) + 1;
             if (expectedDayOfWeek == 1) {
                 if (expectedDayOfYear <= 4 || dayCount(expectedYear) - expectedDayOfYear <= 2) {
                     expectedWeekOfYear = 1;
@@ -134,6 +145,7 @@ public class EarthianCalendarUnitTest {
                 else {
                     expectedWeekOfYear++;
                 }
+                expectedWeekOfMonth++;
             }
             count++;
         }
@@ -219,6 +231,24 @@ public class EarthianCalendarUnitTest {
             calendar.get(Calendar.MILLISECOND),
             ((calendar.get(Calendar.AM_PM) == Calendar.AM) ? "AM" : "PM")
         );
+    }
+    
+    
+    @Test
+    public void gregorianTest() {
+        GregorianCalendar gregorian = new GregorianCalendar();
+        gregorian.setTimeInMillis(0);
+        gregorian.setTimeZone(UTC);
+        for (int i = 0; i < 365; ++i) {
+            System.out.printf(
+                "%3s %3s %2d: WoM=%d DoWiM=%d\n",
+                gregorian.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.ENGLISH),
+                gregorian.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH),
+                gregorian.get(Calendar.DATE),
+                gregorian.get(Calendar.WEEK_OF_MONTH),
+                gregorian.get(Calendar.DAY_OF_WEEK_IN_MONTH));
+            gregorian.setTimeInMillis(gregorian.getTimeInMillis() + 1000 * 60 * 60 * 24);
+        }
     }
         
     
