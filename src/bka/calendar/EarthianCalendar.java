@@ -41,28 +41,9 @@ public class EarthianCalendar extends Calendar {
 
     @Override
     protected void computeFields() {
-        long millisSinceEpoch = time - EPOCH;
-        TimeZone timeZone = getTimeZone();
-        if (timeZone != null) {
-            fields[ZONE_OFFSET] = timeZone.getRawOffset();
-            isSet[ZONE_OFFSET] = true;
-            fields[DST_OFFSET] = timeZone.getDSTSavings();
-            isSet[DST_OFFSET] = true;
-            millisSinceEpoch += timeZone.getOffset(time);
-        }
+        long millisSinceEpoch = time - EPOCH + computeTimeZoneFields();
         DateCalculations calculations = new DateCalculations(millisSinceEpoch);
-
-        fields[ERA] = 0;
-        isSet[ERA] = true;
-        fields[YEAR] = calculations.year;
-        isSet[YEAR] = true;
-        fields[DAY_OF_YEAR] = calculations.dayOfYear;
-        isSet[DAY_OF_YEAR] = true;
-        fields[DAY_OF_WEEK] = calculations.dayOfWeekIndex + 1;
-        isSet[DAY_OF_WEEK] = true;
-        fields[WEEK_OF_YEAR] = weekOfYear(calculations);
-        isSet[WEEK_OF_YEAR] = true;
-                
+        computeYearFields(calculations);
         computeMonthFields(calculations);        
         computeTimeFields((int) (millisSinceEpoch % MILLIS_PER_DAY));
     }
@@ -121,6 +102,30 @@ public class EarthianCalendar extends Calendar {
     public int getLeastMaximum(int field) {
         throw new UnsupportedOperationException("Not supported yet.");
     }
+    
+    
+    private int computeTimeZoneFields() {
+        TimeZone timeZone = getTimeZone();
+        if (timeZone != null) {
+            setField(ZONE_OFFSET, timeZone.getRawOffset());
+            setField(DST_OFFSET, (timeZone.inDaylightTime(getTime())) ? timeZone.getDSTSavings() : 0);
+            return timeZone.getOffset(time);
+        }
+        else {
+            setField(ZONE_OFFSET, 0);
+            setField(DST_OFFSET, 0);
+            return 0;
+        }
+    }
+
+    
+    private void computeYearFields(DateCalculations calculations) {
+        setField(ERA, 0);
+        setField(YEAR, calculations.year);
+        setField(DAY_OF_YEAR, calculations.dayOfYear);
+        setField(DAY_OF_WEEK, calculations.dayOfWeekIndex + 1);
+        setField(WEEK_OF_YEAR, weekOfYear(calculations));
+    }
 
     
     private void computeMonthFields(DateCalculations calculations) {
@@ -138,14 +143,10 @@ public class EarthianCalendar extends Calendar {
         if (dayOfMonthStart < 4) {
             weekOfMonth++;
         }
-        fields[MONTH] = month;
-        isSet[MONTH] = true;
-        fields[DAY_OF_MONTH] = dayOfMonthIndex + 1;
-        isSet[DAY_OF_MONTH] = true;
-        fields[WEEK_OF_MONTH] = weekOfMonth;
-        isSet[WEEK_OF_MONTH] = true;
-        fields[DAY_OF_WEEK_IN_MONTH] = dayOfMonthIndex / DAYS_PER_WEEK + 1;
-        isSet[DAY_OF_WEEK_IN_MONTH] = true;
+        setField(MONTH, month);
+        setField(DAY_OF_MONTH, dayOfMonthIndex + 1);
+        setField(WEEK_OF_MONTH, weekOfMonth);
+        setField(DAY_OF_WEEK_IN_MONTH, dayOfMonthIndex / DAYS_PER_WEEK + 1);
     }
 
     
@@ -154,18 +155,12 @@ public class EarthianCalendar extends Calendar {
             millis += MILLIS_PER_DAY;
         }
         int hourOfDay = millis % MILLIS_PER_DAY / MILLIS_PER_HOUR;
-        fields[AM_PM] = (hourOfDay < 12) ? AM : PM;
-        isSet[AM_PM] = true;
-        fields[HOUR] = hourOfDay % 12;
-        isSet[HOUR] = true;
-        fields[HOUR_OF_DAY] = hourOfDay;
-        isSet[HOUR_OF_DAY] = true;
-        fields[MINUTE] = millis % MILLIS_PER_HOUR / MILLIS_PER_MINUTE;
-        isSet[MINUTE] = true;
-        fields[SECOND] = millis % MILLIS_PER_MINUTE / 1000;
-        isSet[SECOND] = true;
-        fields[MILLISECOND] = millis % 1000;
-        isSet[MILLISECOND] = true;
+        setField(AM_PM, (hourOfDay < 12) ? AM : PM);
+        setField(HOUR, hourOfDay % 12);
+        setField(HOUR_OF_DAY, hourOfDay);
+        setField(MINUTE, millis % MILLIS_PER_HOUR / MILLIS_PER_MINUTE);
+        setField(SECOND, millis % MILLIS_PER_MINUTE / 1000);
+        setField(MILLISECOND, millis % 1000);
     }
     
     
@@ -222,6 +217,12 @@ public class EarthianCalendar extends Calendar {
             dayOfWeekIndex += DAYS_PER_WEEK;
         }
         return dayOfWeekIndex;
+    }
+    
+    
+    private void setField(int fieldIndex, int value) {
+        fields[fieldIndex] = value;
+        isSet[fieldIndex] = true;
     }
     
     

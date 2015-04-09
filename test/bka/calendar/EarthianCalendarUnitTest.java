@@ -211,8 +211,8 @@ public class EarthianCalendarUnitTest {
             gregorian.setTimeZone(zone);
             for (int field = Calendar.AM_PM; field <= Calendar.MILLISECOND; ++field) {
                assertEquals(gregorian.get(field), calendar.get(field));
-            }
-        }        
+            }        
+        }   
     }
     
     
@@ -233,24 +233,6 @@ public class EarthianCalendarUnitTest {
         );
     }
     
-    
-    @Test
-    public void gregorianTest() {
-        GregorianCalendar gregorian = new GregorianCalendar();
-        gregorian.setTimeInMillis(0);
-        gregorian.setTimeZone(UTC);
-        for (int i = 0; i < 365; ++i) {
-            System.out.printf(
-                "%3s %3s %2d: WoM=%d DoWiM=%d\n",
-                gregorian.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.ENGLISH),
-                gregorian.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.ENGLISH),
-                gregorian.get(Calendar.DATE),
-                gregorian.get(Calendar.WEEK_OF_MONTH),
-                gregorian.get(Calendar.DAY_OF_WEEK_IN_MONTH));
-            gregorian.setTimeInMillis(gregorian.getTimeInMillis() + 1000 * 60 * 60 * 24);
-        }
-    }
-        
     
    private int dayCount(int year) {
         return (isLeapYear(year)) ? 366 : 365;
