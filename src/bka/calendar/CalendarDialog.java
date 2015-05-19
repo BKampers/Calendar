@@ -130,14 +130,19 @@ public class CalendarDialog extends javax.swing.JDialog {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        Calendar calendar = null;
+        ArrayList<Calendar> calendars = new ArrayList<>();
         if (args.length > 0) {
-            try {
-                calendar = (Calendar) Class.forName(args[0]).newInstance();
+            for (int i = 0; i < args.length; ++i) {
+                try {
+                    calendars.add((Calendar) Class.forName(args[i]).newInstance());
+                }
+                catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
+                    Logger.getLogger(CalendarDialog.class.getName()).log(Level.ALL, null, ex);
+                }
             }
-            catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
-                Logger.getLogger(CalendarDialog.class.getName()).log(Level.ALL, null, ex);
-            }
+        }
+        if (calendars.isEmpty()) {
+            calendars.add(null);
         }
         
         /* Set the Nimbus look and feel */
@@ -160,8 +165,10 @@ public class CalendarDialog extends javax.swing.JDialog {
 
         //</editor-fold>
 
-        /* Create and display the dialog */
-        java.awt.EventQueue.invokeLater(new Task(calendar));
+        /* Create and display the dialogs */
+        for (Calendar calendar : calendars) {
+            java.awt.EventQueue.invokeLater(new Task(calendar));
+        }
     }
     
     
@@ -318,7 +325,7 @@ public class CalendarDialog extends javax.swing.JDialog {
         return roman;
     }
     
-    
+
     private static class Task implements Runnable {
         
         private Task(Calendar calendar) {
@@ -328,6 +335,13 @@ public class CalendarDialog extends javax.swing.JDialog {
         @Override
         public void run() {
             CalendarDialog dialog = new CalendarDialog(new javax.swing.JFrame(), calendar);
+            if (nextLocation != null) {
+                dialog.setLocation(nextLocation);
+            }
+            else {
+                nextLocation = dialog.getLocation();
+            }
+            nextLocation.x += dialog.getWidth();
             dialog.addWindowListener(new java.awt.event.WindowAdapter() {
                 @Override
                 public void windowClosing(java.awt.event.WindowEvent e) {
@@ -338,6 +352,7 @@ public class CalendarDialog extends javax.swing.JDialog {
         }
         
         private final Calendar calendar;
+        private static Point nextLocation = null;
         
     }
 
