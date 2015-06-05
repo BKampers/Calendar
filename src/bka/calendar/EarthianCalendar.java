@@ -105,54 +105,41 @@ public class EarthianCalendar extends Calendar {
         }
         unsetFieldsFrom(field);
     }
-
+    
+    
+    @Override
+    public void roll(int field, int amount) {
+        throw new UnsupportedOperationException("Not supported yet.");
+    }
+    
 
     @Override
     public void roll(int field, boolean up) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        roll(field, (up) ? 1 : -1);
     }
 
 
     @Override
     public int getMinimum(int field) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return MIN_VALUES[field];
     }
 
 
     @Override
     public int getMaximum(int field) {
-        switch (field) {
-            case ERA: return 0;
-            case YEAR: return Integer.MAX_VALUE;
-            case MONTH: return 11;
-            case WEEK_OF_YEAR: return 53;
-            case WEEK_OF_MONTH: return 5;
-            case DAY_OF_MONTH: return 31;
-            case DAY_OF_YEAR: return 366;
-            case DAY_OF_WEEK: return DAYS_PER_WEEK;
-            case DAY_OF_WEEK_IN_MONTH: return DAYS_PER_WEEK;
-            case AM_PM: return PM;
-            case HOUR: return 11;
-            case HOUR_OF_DAY: return 23;
-            case MINUTE: return 59;
-            case SECOND: return 59;
-            case MILLISECOND: return 999;
-            case ZONE_OFFSET: return 14 * MILLIS_PER_HOUR;
-            case DST_OFFSET: return 2 * MILLIS_PER_HOUR;
-            default: throw new IllegalArgumentException();
-        }
+        return MAX_VALUES[field];
     }
 
 
     @Override
     public int getGreatestMinimum(int field) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return MIN_VALUES[field];
     }
 
 
     @Override
     public int getLeastMaximum(int field) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        return LEAST_MAX_VALUES[field];
     }
     
     
@@ -329,6 +316,68 @@ public class EarthianCalendar extends Calendar {
     private static final long MILLIS_PER_GENERATION = YEARS_PER_GENERATION * MILLIS_PER_YEAR + LEAP_YEARS_PER_GENERATION * MILLIS_PER_DAY;
 
     private static final int DAYS_PER_WEEK = 7;
+    
+    static final int MIN_VALUES[] = {
+        0,                     // ERA
+        Integer.MIN_VALUE,     // YEAR
+        ARIES,                 // MONTH
+        1,                     // WEEK_OF_YEAR
+        0,                     // WEEK_OF_MONTH
+        1,                     // DAY_OF_MONTH
+        1,                     // DAY_OF_YEAR
+        SOL,                   // DAY_OF_WEEK
+        1,                     // DAY_OF_WEEK_IN_MONTH
+        AM,                    // AM_PM
+        0,                     // HOUR
+        0,                     // HOUR_OF_DAY
+        0,                     // MINUTE
+        0,                     // SECOND
+        0,                     // MILLISECOND
+        -13 * MILLIS_PER_HOUR, // ZONE_OFFSET (UNIX compatibility)
+        0                      // DST_OFFSET
+    };
+    
+    static final int LEAST_MAX_VALUES[] = {
+        0,                     // ERA
+        Integer.MAX_VALUE,     // YEAR
+        PISCES,                // MONTH
+        52,                    // WEEK_OF_YEAR
+        4,                     // WEEK_OF_MONTH
+        30,                    // DAY_OF_MONTH
+        365,                   // DAY_OF_YEAR
+        SATURNUS,              // DAY_OF_WEEK
+        4,                     // DAY_OF_WEEK_IN
+        PM,                    // AM_PM
+        11,                    // HOUR
+        23,                    // HOUR_OF_DAY
+        59,                    // MINUTE
+        59,                    // SECOND
+        999,                   // MILLISECOND
+        14 * MILLIS_PER_HOUR,  // ZONE_OFFSET
+        20 * MILLIS_PER_MINUTE // DST_OFFSET (historical least maximum)
+    };
+    
+    static final int MAX_VALUES[] = {
+        0,                    // ERA
+        Integer.MAX_VALUE,    // YEAR
+        PISCES,               // MONTH
+        53,                   // WEEK_OF_YEAR
+        6,                    // WEEK_OF_MONTH
+        31,                   // DAY_OF_MONTH
+        366,                  // DAY_OF_YEAR
+        SATURNUS,             // DAY_OF_WEEK
+        6,                    // DAY_OF_WEEK_IN
+        PM,                   // AM_PM
+        11,                   // HOUR
+        23,                   // HOUR_OF_DAY
+        59,                   // MINUTE
+        59,                   // SECOND
+        999,                  // MILLISECOND
+        14 * MILLIS_PER_HOUR, // ZONE_OFFSET
+        2 * MILLIS_PER_HOUR   // DST_OFFSET (double summer time)
+    };
+
+
     
 
 }
