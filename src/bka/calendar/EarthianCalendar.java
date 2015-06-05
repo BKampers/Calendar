@@ -10,7 +10,6 @@ import java.util.*;
 
 public class EarthianCalendar extends Calendar {
     
-    
     public static final int ARIES = 0;
     public static final int TAURUS = 1;
     public static final int GEMINI = 2;
@@ -35,7 +34,19 @@ public class EarthianCalendar extends Calendar {
 
     @Override
     protected void computeTime() {
-        throw new UnsupportedOperationException("Not supported yet.");
+        time = 
+            EPOCH +
+            (fields[YEAR] / YEARS_PER_GENERATION) * MILLIS_PER_GENERATION + yearOffset(fields[YEAR] % YEARS_PER_GENERATION) +
+            (fields[MONTH] / 2) * MILLIS_PER_BIMESTER + (fields[MONTH] % 2) * MILLIS_PER_SHORT_MONTH +
+            (fields[DAY_OF_MONTH] - 1) * MILLIS_PER_DAY +
+            fields[HOUR_OF_DAY] * MILLIS_PER_HOUR +
+            fields[MINUTE] * MILLIS_PER_MINUTE +
+            fields[SECOND] * 1000 +
+            fields[MILLISECOND];
+        TimeZone timeZone = getTimeZone();
+        if (timeZone != null) {
+            time -= timeZone.getOffset(time);
+        }
     }
 
 
@@ -51,7 +62,48 @@ public class EarthianCalendar extends Calendar {
     
     @Override
     public void add(int field, int amount) {
-        throw new UnsupportedOperationException("Not supported yet.");
+        switch (field) {
+            case MILLISECOND:
+                time += amount;
+                break;
+            case SECOND:
+                time += amount * 1000;
+                break;
+            case MINUTE:
+                time += amount * MILLIS_PER_MINUTE;
+                break;
+            case HOUR_OF_DAY:
+            case HOUR:
+                time += amount * MILLIS_PER_HOUR;
+                field = HOUR_OF_DAY;
+                break;
+            case AM_PM:
+                time += amount * 12 * MILLIS_PER_HOUR;
+                break;
+            case DAY_OF_WEEK_IN_MONTH:
+            case DAY_OF_WEEK:
+            case DAY_OF_YEAR:
+            case DAY_OF_MONTH:
+                time += amount * MILLIS_PER_DAY;
+                field = HOUR_OF_DAY;
+                break;
+            case WEEK_OF_MONTH:
+            case WEEK_OF_YEAR:
+                time += amount * MILLIS_PER_WEEK;
+                field = WEEK_OF_MONTH;
+                break;
+            case MONTH:
+                set(MONTH, fields[MONTH] + amount);
+                field = DAY_OF_WEEK_IN_MONTH;
+                break;
+            case YEAR:
+                set(YEAR, fields[YEAR] + amount);
+                field = MONTH;
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+        unsetFieldsFrom(field);
     }
 
 
@@ -226,6 +278,14 @@ public class EarthianCalendar extends Calendar {
     }
     
     
+    private void unsetFieldsFrom(int fromField) {
+        for (int field = fromField; field > ERA; --field) {
+            isSet[field] = false;
+        }
+        areFieldsSet = false;
+    }
+    
+    
     private class DateCalculations {
         
         DateCalculations(long millisSinceEpoch) {
@@ -258,12 +318,14 @@ public class EarthianCalendar extends Calendar {
     private static final int MILLIS_PER_MINUTE = 60 * 1000;
     private static final int MILLIS_PER_HOUR = 60 * MILLIS_PER_MINUTE; 
     private static final int MILLIS_PER_DAY = 24 * MILLIS_PER_HOUR;
+    private static final int MILLIS_PER_WEEK = 7 * MILLIS_PER_DAY;
     
+    private static final long MILLIS_PER_SHORT_MONTH = 30L * MILLIS_PER_DAY;
     private static final long MILLIS_PER_BIMESTER = 61L * MILLIS_PER_DAY;
     private static final long MILLIS_PER_YEAR = 365L * MILLIS_PER_DAY;
 
     private static final int YEARS_PER_GENERATION = 33;
-    private static final long LEAP_YEARS_PER_GENERATION = 8;
+    private static final int LEAP_YEARS_PER_GENERATION = 8;
     private static final long MILLIS_PER_GENERATION = YEARS_PER_GENERATION * MILLIS_PER_YEAR + LEAP_YEARS_PER_GENERATION * MILLIS_PER_DAY;
 
     private static final int DAYS_PER_WEEK = 7;

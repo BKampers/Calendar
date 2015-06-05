@@ -205,7 +205,6 @@ public class EarthianCalendarUnitTest {
         gregorian.setTime(epoch);
         calendar.setTime(epoch);
         for (String zoneId : TimeZone.getAvailableIDs()) {
-            System.out.printf("Zone %s\n", zoneId);
             TimeZone zone = TimeZone.getTimeZone(zoneId);
             calendar.setTimeZone(zone);
             gregorian.setTimeZone(zone);
@@ -217,20 +216,46 @@ public class EarthianCalendarUnitTest {
     
     
     @Test
-    public void nowTest() {
-        calendar.setTimeInMillis(System.currentTimeMillis());
-        calendar.setTimeZone(TimeZone.getDefault());
-        System.out.printf(
-            "%04d/%02d/%02d %d:%02d:%02d.%03d %s\n",
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH) + 1,
-            calendar.get(Calendar.DATE),
-            ((calendar.get(Calendar.HOUR) != 0) ? calendar.get(Calendar.HOUR) : 12),
-            calendar.get(Calendar.MINUTE),
-            calendar.get(Calendar.SECOND),
-            calendar.get(Calendar.MILLISECOND),
-            ((calendar.get(Calendar.AM_PM) == Calendar.AM) ? "AM" : "PM")
-        );
+    public void fieldSetTest() {
+        calendar.set(Calendar.YEAR, 0);
+        calendar.set(Calendar.MONTH, EarthianCalendar.ARIES);
+        calendar.set(Calendar.DATE, 1);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
+        calendar.set(Calendar.MILLISECOND, 0);
+        assertEquals(epoch.getTime(), calendar.getTimeInMillis());
+        calendar.set(Calendar.YEAR, -38);
+        calendar.set(Calendar.MONTH, EarthianCalendar.CAPRICORNUS);
+        calendar.set(Calendar.DATE, 13);
+        assertEquals(0L, calendar.getTimeInMillis());
+        calendar.setTimeZone(TimeZone.getTimeZone("CET"));
+        calendar.set(Calendar.MILLISECOND, 0);
+        assertEquals(-60 * 60 * 1000L, calendar.getTimeInMillis());        
+    }
+
+    
+    @Test
+    public void fieldAddTest() {
+        calendar.setTime(epoch);
+        int milli = calendar.get(Calendar.MILLISECOND); 
+        calendar.add(Calendar.MILLISECOND, 1);
+        assertEquals((milli + 1) % 1000, calendar.get(Calendar.MILLISECOND));
+        int second = calendar.get(Calendar.SECOND);
+        calendar.add(Calendar.MILLISECOND, 1000);
+        assertEquals((second + 1) % 60, calendar.get(Calendar.SECOND));
+        int minute = calendar.get(Calendar.MINUTE);
+        calendar.add(Calendar.SECOND, 60);
+        assertEquals((minute + 1) % 60, calendar.get(Calendar.MINUTE));
+        int hour = calendar.get(Calendar.HOUR_OF_DAY);
+        calendar.add(Calendar.MINUTE, 60);
+        assertEquals((hour + 1) % 24, calendar.get(Calendar.HOUR));
+        int month = calendar.get(Calendar.MONTH);
+        calendar.add(Calendar.MONTH, 1);
+        assertEquals(month + 1, calendar.get(Calendar.MONTH));
+        int year = calendar.get(Calendar.YEAR);
+        calendar.add(Calendar.YEAR, 1);
+        assertEquals(year + 1, calendar.get(Calendar.YEAR));
     }
     
     
