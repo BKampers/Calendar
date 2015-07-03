@@ -65,7 +65,7 @@ public class EarthianCalendar extends Calendar {
                 addMonth(amount);
                 break;
             case YEAR:
-                set(YEAR, fields[YEAR] + amount);
+                addYear(amount);
                 break;
             case ERA:
                 // Era alway is 0;
@@ -149,18 +149,26 @@ public class EarthianCalendar extends Calendar {
     
     @Override
     protected void computeTime() {
-        time = 
-            EPOCH +
-            (fields[YEAR] / YEARS_PER_GENERATION) * MILLIS_PER_GENERATION + yearOffset(fields[YEAR] % YEARS_PER_GENERATION) +
-            (fields[MONTH] / 2) * MILLIS_PER_BIMESTER + (fields[MONTH] % 2) * MILLIS_PER_SHORT_MONTH +
-            (fields[DAY_OF_MONTH] - 1) * MILLIS_PER_DAY +
-            fields[HOUR_OF_DAY] * MILLIS_PER_HOUR +
-            fields[MINUTE] * MILLIS_PER_MINUTE +
-            fields[SECOND] * 1000 +
-            fields[MILLISECOND];
-        TimeZone timeZone = getTimeZone();
-        if (timeZone != null) {
-            time -= timeZone.getOffset(time);
+        if (isSet[YEAR] && isSet[HOUR_OF_DAY] && isSet[MINUTE] && isSet[SECOND] && isSet[MILLISECOND]) {
+            time = 
+                EPOCH +
+                (fields[YEAR] / YEARS_PER_GENERATION) * MILLIS_PER_GENERATION + yearOffset(fields[YEAR] % YEARS_PER_GENERATION) +
+                fields[HOUR_OF_DAY] * MILLIS_PER_HOUR +
+                fields[MINUTE] * MILLIS_PER_MINUTE +
+                fields[SECOND] * 1000 +
+                fields[MILLISECOND];
+            if (isSet[DAY_OF_YEAR]) {
+                time += (long) (fields[DAY_OF_YEAR] - 1) * MILLIS_PER_DAY;
+            }
+            else if (isSet[MONTH] && isSet[DAY_OF_MONTH]) {
+                time +=
+                    (fields[MONTH] / 2) * MILLIS_PER_BIMESTER + (fields[MONTH] % 2) * MILLIS_PER_SHORT_MONTH +
+                    (fields[DAY_OF_MONTH] - 1) * MILLIS_PER_DAY;
+            }
+            TimeZone timeZone = getTimeZone();
+            if (timeZone != null) {
+                time -= timeZone.getOffset(time);
+            }
         }
     }
 
@@ -181,8 +189,8 @@ public class EarthianCalendar extends Calendar {
     }
     
     
-    private void addMonth(int count) {
-        int month = fields[MONTH] + count;
+    private void addMonth(int amount) {
+        int month = fields[MONTH] + amount;
         int year = fields[YEAR] + month / MONTHS_PER_YEAR;
         month %= MONTHS_PER_YEAR;
         if (month < 0) {
@@ -191,7 +199,26 @@ public class EarthianCalendar extends Calendar {
         }
         setField(YEAR, year);
         setField(MONTH, month);
-        setField(DAY_OF_MONTH, Math.min(dayCountForMonth(month, year), fields[DAY_OF_MONTH]));
+        setField(DAY_OF_MONTH, Math.min(fields[DAY_OF_MONTH], dayCountForMonth(month, year)));
+        isSet[DAY_OF_YEAR] = false;
+        isSet[WEEK_OF_YEAR] = false;
+        isSet[WEEK_OF_MONTH] = false;
+        isSet[DAY_OF_WEEK_IN_MONTH] = false;
+        isSet[DAY_OF_WEEK] = false;
+        computeTime();
+    }
+    
+    
+    private void addYear(int amount) {
+        int year = fields[YEAR] + amount;
+        setField(YEAR, year);
+        setField(DAY_OF_YEAR, Math.min(fields[DAY_OF_YEAR], dayCountForYear(year)));
+        isSet[MONTH] = false;
+        isSet[DAY_OF_MONTH] = false;
+        isSet[WEEK_OF_YEAR] = false;
+        isSet[WEEK_OF_MONTH] = false;
+        isSet[DAY_OF_WEEK_IN_MONTH] = false;
+        isSet[DAY_OF_WEEK] = false;
         computeTime();
     }
 
