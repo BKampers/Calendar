@@ -33,6 +33,121 @@ public class EarthianCalendar extends Calendar {
     
 
     @Override
+    public void add(int field, int amount) {
+        switch (field) {
+            case MILLISECOND:
+                time += amount;
+                break;
+            case SECOND:
+                time += amount * 1000;
+                break;
+            case MINUTE:
+                time += amount * MILLIS_PER_MINUTE;
+                break;
+            case HOUR_OF_DAY:
+            case HOUR:
+                time += amount * MILLIS_PER_HOUR;
+                break;
+            case AM_PM:
+                time += amount * 12 * MILLIS_PER_HOUR;
+                break;
+            case DAY_OF_WEEK_IN_MONTH:
+            case DAY_OF_WEEK:
+            case DAY_OF_YEAR:
+            case DAY_OF_MONTH:
+                time += amount * MILLIS_PER_DAY;
+                break;
+            case WEEK_OF_MONTH:
+            case WEEK_OF_YEAR:
+                time += amount * MILLIS_PER_WEEK;
+                break;
+            case MONTH:
+                addMonth(amount);
+                break;
+            case YEAR:
+                set(YEAR, fields[YEAR] + amount);
+                break;
+            case ERA:
+                // Era alway is 0;
+                break;
+            default:
+                throw new IllegalArgumentException();
+        }
+        computeFields();
+    }
+    
+    
+    @Override
+    public void roll(int field, boolean up) {
+        int min = getActualMinimum(field);
+        int max = getActualMaximum(field);
+        int value = fields[field];
+        if (up) {
+            value++;
+            if (value > max) {
+                value = min;
+            }
+        }
+        else {
+            value--;
+            if (value < min) {
+                value = max;
+            }
+        }
+        setField(field, value);
+        if (field == MONTH) {
+            
+        }
+    }
+
+
+    @Override
+    public int getMinimum(int field) {
+        return MIN_VALUES[field];
+    }
+
+
+    @Override
+    public int getMaximum(int field) {
+        return MAX_VALUES[field];
+    }
+
+
+    @Override
+    public int getGreatestMinimum(int field) {
+        return MIN_VALUES[field];
+    }
+
+
+    @Override
+    public int getLeastMaximum(int field) {
+        return LEAST_MAX_VALUES[field];
+    }
+    
+    
+    @Override
+    public int getActualMinimum(int field) {
+        return getMinimum(field);
+    }
+    
+    
+    @Override
+    public int getActualMaximum(int field) {
+        if (! areFieldsSet) {
+            computeFields();
+        }
+        switch (field) {
+            case DAY_OF_YEAR:
+                return dayCountForYear(fields[YEAR]);
+            case DAY_OF_MONTH: 
+                return dayCountForMonth(fields[MONTH], fields[YEAR]);
+            default:
+                return getMaximum(field);
+        }
+    }
+    
+    
+    @Override
     protected void computeTime() {
         time = 
             EPOCH +
@@ -60,88 +175,26 @@ public class EarthianCalendar extends Calendar {
     }
 
     
-    @Override
-    public void add(int field, int amount) {
-        switch (field) {
-            case MILLISECOND:
-                time += amount;
-                break;
-            case SECOND:
-                time += amount * 1000;
-                break;
-            case MINUTE:
-                time += amount * MILLIS_PER_MINUTE;
-                break;
-            case HOUR_OF_DAY:
-            case HOUR:
-                time += amount * MILLIS_PER_HOUR;
-                field = HOUR_OF_DAY;
-                break;
-            case AM_PM:
-                time += amount * 12 * MILLIS_PER_HOUR;
-                break;
-            case DAY_OF_WEEK_IN_MONTH:
-            case DAY_OF_WEEK:
-            case DAY_OF_YEAR:
-            case DAY_OF_MONTH:
-                time += amount * MILLIS_PER_DAY;
-                field = HOUR_OF_DAY;
-                break;
-            case WEEK_OF_MONTH:
-            case WEEK_OF_YEAR:
-                time += amount * MILLIS_PER_WEEK;
-                field = WEEK_OF_MONTH;
-                break;
-            case MONTH:
-                set(MONTH, fields[MONTH] + amount);
-                field = DAY_OF_WEEK_IN_MONTH;
-                break;
-            case YEAR:
-                set(YEAR, fields[YEAR] + amount);
-                field = MONTH;
-                break;
-            default:
-                throw new IllegalArgumentException();
+    private void setField(int fieldIndex, int value) {
+        fields[fieldIndex] = value;
+        isSet[fieldIndex] = true;
+    }
+    
+    
+    private void addMonth(int count) {
+        int month = fields[MONTH] + count;
+        int year = fields[YEAR] + month / MONTHS_PER_YEAR;
+        month %= MONTHS_PER_YEAR;
+        if (month < 0) {
+            month += MONTHS_PER_YEAR;
+            year--;
         }
-        unsetFieldsFrom(field);
-    }
-    
-    
-    @Override
-    public void roll(int field, int amount) {
-        throw new UnsupportedOperationException("Not supported yet.");
-    }
-    
-
-    @Override
-    public void roll(int field, boolean up) {
-        roll(field, (up) ? 1 : -1);
+        setField(YEAR, year);
+        setField(MONTH, month);
+        setField(DAY_OF_MONTH, Math.min(dayCountForMonth(month, year), fields[DAY_OF_MONTH]));
+        computeTime();
     }
 
-
-    @Override
-    public int getMinimum(int field) {
-        return MIN_VALUES[field];
-    }
-
-
-    @Override
-    public int getMaximum(int field) {
-        return MAX_VALUES[field];
-    }
-
-
-    @Override
-    public int getGreatestMinimum(int field) {
-        return MIN_VALUES[field];
-    }
-
-
-    @Override
-    public int getLeastMaximum(int field) {
-        return LEAST_MAX_VALUES[field];
-    }
-    
     
     private int computeTimeZoneFields() {
         TimeZone timeZone = getTimeZone();
@@ -219,19 +272,37 @@ public class EarthianCalendar extends Calendar {
     
     private int weekOfYear(int daysSinceWeek1, DateCalculations calculations) {
         int weekOfYear = daysSinceWeek1 / DAYS_PER_WEEK + 1;
-        if (weekOfYear == 53 && dayCount(calculations.year) - calculations.dayOfYear + calculations.dayOfWeekIndex < 3) {
+        if (weekOfYear == 53 && dayCountForYear(calculations.year) - calculations.dayOfYear + calculations.dayOfWeekIndex < 3) {
             weekOfYear = 1;
         }
         return weekOfYear;    
     }
     
     
-    private int dayCount(int year) {
+    private boolean isLeapYear(int year) {
         int generationIndex =  year % YEARS_PER_GENERATION;
         if (generationIndex < 0) {
             generationIndex += YEARS_PER_GENERATION;
         }
-        return (generationIndex % 4 == 2) ? 366 : 365;
+        return generationIndex % 4 == 2;
+    }
+    
+    
+    private int dayCountForYear(int year) {
+        return (isLeapYear(year)) ? DAYS_PER_LEAP_YEAR : DAYS_PER_YEAR;
+    }
+    
+    
+    private int dayCountForMonth(int month, int year) {
+        if (month % 2 == 0) {
+            return getLeastMaximum(MONTH);
+        }
+        else if (month != PISCES) {
+            return getMaximum(MONTH);
+        }
+        else {
+            return (isLeapYear(year)) ? getMaximum(MONTH) : getLeastMaximum(MONTH);
+        }
     }
 
 
@@ -256,20 +327,6 @@ public class EarthianCalendar extends Calendar {
             dayOfWeekIndex += DAYS_PER_WEEK;
         }
         return dayOfWeekIndex;
-    }
-    
-    
-    private void setField(int fieldIndex, int value) {
-        fields[fieldIndex] = value;
-        isSet[fieldIndex] = true;
-    }
-    
-    
-    private void unsetFieldsFrom(int fromField) {
-        for (int field = fromField; field > ERA; --field) {
-            isSet[field] = false;
-        }
-        areFieldsSet = false;
     }
     
     
@@ -316,6 +373,10 @@ public class EarthianCalendar extends Calendar {
     private static final long MILLIS_PER_GENERATION = YEARS_PER_GENERATION * MILLIS_PER_YEAR + LEAP_YEARS_PER_GENERATION * MILLIS_PER_DAY;
 
     private static final int DAYS_PER_WEEK = 7;
+    private static final int MONTHS_PER_YEAR = 12;
+    
+    private static final int DAYS_PER_YEAR = 365;
+    private static final int DAYS_PER_LEAP_YEAR = 366;
     
     static final int MIN_VALUES[] = {
         0,                     // ERA
@@ -344,7 +405,7 @@ public class EarthianCalendar extends Calendar {
         52,                    // WEEK_OF_YEAR
         4,                     // WEEK_OF_MONTH
         30,                    // DAY_OF_MONTH
-        365,                   // DAY_OF_YEAR
+        DAYS_PER_YEAR,         // DAY_OF_YEAR
         SATURNUS,              // DAY_OF_WEEK
         4,                     // DAY_OF_WEEK_IN
         PM,                    // AM_PM
@@ -364,7 +425,7 @@ public class EarthianCalendar extends Calendar {
         53,                   // WEEK_OF_YEAR
         6,                    // WEEK_OF_MONTH
         31,                   // DAY_OF_MONTH
-        366,                  // DAY_OF_YEAR
+        DAYS_PER_LEAP_YEAR,   // DAY_OF_YEAR
         SATURNUS,             // DAY_OF_WEEK
         6,                    // DAY_OF_WEEK_IN
         PM,                   // AM_PM

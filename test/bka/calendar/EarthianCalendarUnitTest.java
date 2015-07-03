@@ -259,6 +259,36 @@ public class EarthianCalendarUnitTest {
     }
     
     
+    @Test
+    public void monthAddTest() {
+        calendar.setTime(epoch);
+        calendar.add(Calendar.MONTH, 5);
+        assertEquals(5, calendar.get(Calendar.MONTH));
+        assertEquals(0, calendar.get(Calendar.YEAR));
+        calendar.add(Calendar.MONTH, 12);
+        assertEquals(5, calendar.get(Calendar.MONTH));
+        assertEquals(1, calendar.get(Calendar.YEAR));
+        calendar.setTime(epoch);
+        calendar.add(Calendar.MONTH, -1);
+        assertEquals(11, calendar.get(Calendar.MONTH));
+        assertEquals(-1, calendar.get(Calendar.YEAR));
+        calendar.add(Calendar.MONTH, -12);
+        assertEquals(11, calendar.get(Calendar.MONTH));
+        assertEquals(-2, calendar.get(Calendar.YEAR));
+    }
+    
+    
+    @Test
+    public void fieldRollTest() {
+        calendar.setTime(epoch);
+        int month = calendar.get(Calendar.MONTH);
+        for (int i = 1; i <= 12; ++i) {
+            calendar.roll(Calendar.MONTH, 1);
+            assertEquals((month + i) % 12, calendar.get(Calendar.MONTH));
+        }
+    }
+    
+    
    private int dayCount(int year) {
         return (isLeapYear(year)) ? 366 : 365;
     }
