@@ -46,7 +46,7 @@ public class FrenchRepublicanCalendar extends Calendar {
     }
     
     
-    FrenchRepublicanCalendar() {
+    public FrenchRepublicanCalendar() {
         setFirstDayOfWeek(PRIMIDI);
         setMinimalDaysInFirstWeek(DAYS_PER_WEEK);
     }
