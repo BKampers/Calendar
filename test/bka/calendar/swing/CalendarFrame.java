@@ -101,58 +101,78 @@ public class CalendarFrame extends javax.swing.JFrame {
     
     
     private void setIcon(Calendar calendar) {
-        Validator validator = getValidator(calendar);
-        BufferedImage image = new BufferedImage(100, 100, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D graphics = (Graphics2D) image.getGraphics();
-        graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        graphics.setColor(Color.WHITE);
-        graphics.fillRect(10, 10, 80, 80);
-        graphics.setColor(Color.GRAY);
-        graphics.drawRect(10, 10, 80, 80);
-        graphics.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 30));
-        FontMetrics metrics = graphics.getFontMetrics();
-        String date = Integer.toString(calendar.get(Calendar.DATE));
-        int x = 50 - metrics.stringWidth(date) / 2;
-        graphics.setColor(validator.isSabbath(calendar) ? Style.HOLYDAY_FOREGROUND : Style.DEFAULT_FOREGROUND);
-        graphics.drawString(date, x, 50);
-        if (! validator.isComplementaryDay(calendar)) {
-            graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 12));        
+        String osName = System.getProperty("os.name");
+        if (osName.contains("Mac")) {
+            setMacIcon(calendar);
+        }
+        else if (osName.contains("Windows")) {
+            setWindowsIcons(calendar);
         }
         else {
-            graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, 8));
-        }
-        metrics = graphics.getFontMetrics();
-        Formatter formatter = new Formatter(calendar);
-        String text = (! validator.isComplementaryDay(calendar)) ? formatter.monthText() : formatter.yearDayText();
-        x = 50 - metrics.stringWidth(text) / 2;
-        graphics.setColor(Style.DEFAULT_FOREGROUND);
-        graphics.drawString(text, x, 70);
-        if (System.getProperty("os.name").contains("Mac")) {
-            setDockIconImage(image);        
-        }
-        else {
-            setFrameIcon(calendar);
+            setIconImage(createDefaultImage(calendar, 1024, null));
         }
     }
+
     
-    private void setFrameIcon(Calendar calendar) {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+    private void setMacIcon(Calendar calendar) {
+        try {
+            Class applicationClass = Class.forName("com.apple.eawt.Application");
+            Method getApplication = applicationClass.getMethod("getApplication");
+            Object application;
+            application = getApplication.invoke(null);
+            Method setDockIconImage = applicationClass.getMethod("setDockIconImage", Image.class);
+            Object[] imageParameter = new Object[] { createDefaultImage(calendar, 1024, null) };
+            setDockIconImage.invoke(application, imageParameter);
+        }
+        catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
+            Logger.getLogger(CalendarFrame.class.getName()).log(Level.INFO, "Mac dock icon set failed", ex);
+        }
+        setIconImage(createDefaultImage(calendar, 1024, Color.GRAY));
+    }
+    
+    
+    private void setWindowsIcons(Calendar calendar) {
         ArrayList<Image> images = new ArrayList<>();
-        images.add(createImage(calendar, 32));
-        images.add(createImage(calendar, 256));
+        images.add(createWindowsImage(calendar, 32));
+        images.add(createWindowsImage(calendar, 256));
         setIconImages(images);
     }
 
     
-    private BufferedImage createImage(Calendar calendar, int size) {
+    private BufferedImage createDefaultImage(Calendar calendar, int size, Color textColor) {
+        Validator validator = getValidator(calendar);
         BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = (Graphics2D) image.getGraphics();
+        drawImageBackground(graphics, size);
         graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
-        graphics.setColor(Color.WHITE);
-        int margin = size / 16;
-        int innerSize = size - 2 * margin;
-        graphics.fillRect(margin, margin, innerSize, innerSize);
-        graphics.setColor(Color.GRAY);
-        graphics.drawRect(margin, margin, innerSize, innerSize);
+        graphics.setFont(new Font(Font.SANS_SERIF, Font.BOLD, size / 3));
+        FontMetrics metrics = graphics.getFontMetrics();
+        String date = Integer.toString(calendar.get(Calendar.DATE));
+        int x = (size - metrics.stringWidth(date)) / 2;
+        graphics.setColor((textColor == null) ? validator.isSabbath(calendar) ? Style.HOLYDAY_FOREGROUND : Style.DEFAULT_FOREGROUND : textColor);
+        graphics.drawString(date, x, size / 2);
+        if (! validator.isComplementaryDay(calendar)) {
+            graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, size / 6));        
+        }
+        else {
+            graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, size / 15));
+        }
+        metrics = graphics.getFontMetrics();
+        Formatter formatter = new Formatter(calendar);
+        String text = (! validator.isComplementaryDay(calendar)) ? formatter.monthText() : formatter.yearDayText();
+        x = (size - metrics.stringWidth(text)) / 2;
+        graphics.setColor((textColor == null) ? Style.DEFAULT_FOREGROUND : textColor);
+        graphics.drawString(text, x, size - size / 4);
+        return image;
+    }
+    
+    
+    private BufferedImage createWindowsImage(Calendar calendar, int size) {
+        BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics = (Graphics2D) image.getGraphics();
+        drawImageBackground(graphics, size);
+        graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
         graphics.setFont(new Font(Font.SANS_SERIF, Font.BOLD, size / 2));
         FontMetrics metrics = graphics.getFontMetrics();
         String date = Integer.toString(calendar.get(Calendar.DATE));
@@ -161,22 +181,15 @@ public class CalendarFrame extends javax.swing.JFrame {
         graphics.drawString(date, x, size / 16 * 10);
         return image;
     }
+
     
-    
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-    private void setDockIconImage(BufferedImage image) {
-        try {
-            Class applicationClass = Class.forName("com.apple.eawt.Application");
-            Method getApplication = applicationClass.getMethod("getApplication");
-            Object application;
-            application = getApplication.invoke(null);
-            Method setDockIconImage = applicationClass.getMethod("setDockIconImage", Image.class);
-            Object[] imageParameter = new Object[] { image };
-            setDockIconImage.invoke(application, imageParameter);
-        }
-        catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
-            Logger.getLogger(CalendarFrame.class.getName()).log(Level.INFO, "Mac dock icon set failed", ex);
-        }
+    private void drawImageBackground(Graphics2D graphics, int size) {
+        int margin = size / 16;
+        int innerSize = size - 2 * margin;
+        graphics.setColor(Color.WHITE);
+        graphics.fillRect(margin, margin, innerSize, innerSize);
+        graphics.setColor(Color.GRAY);
+        graphics.drawRect(margin, margin, innerSize, innerSize);
     }
     
     
