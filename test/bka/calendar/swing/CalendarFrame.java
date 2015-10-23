@@ -84,19 +84,15 @@ public class CalendarFrame extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(CalendarFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(CalendarFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(CalendarFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        }
+        catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(CalendarFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
-        //</editor-fold>
+
 
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable() {
+            @Override
             public void run() {
                 new CalendarFrame().setVisible(true);
             }
@@ -134,6 +130,36 @@ public class CalendarFrame extends javax.swing.JFrame {
         if (System.getProperty("os.name").contains("Mac")) {
             setDockIconImage(image);        
         }
+        else {
+            setFrameIcon(calendar);
+        }
+    }
+    
+    private void setFrameIcon(Calendar calendar) {
+        ArrayList<Image> images = new ArrayList<>();
+        images.add(createImage(calendar, 32));
+        images.add(createImage(calendar, 256));
+        setIconImages(images);
+    }
+
+    
+    private BufferedImage createImage(Calendar calendar, int size) {
+        BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D graphics = (Graphics2D) image.getGraphics();
+        graphics.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+        graphics.setColor(Color.WHITE);
+        int margin = size / 16;
+        int innerSize = size - 2 * margin;
+        graphics.fillRect(margin, margin, innerSize, innerSize);
+        graphics.setColor(Color.GRAY);
+        graphics.drawRect(margin, margin, innerSize, innerSize);
+        graphics.setFont(new Font(Font.SANS_SERIF, Font.BOLD, size / 2));
+        FontMetrics metrics = graphics.getFontMetrics();
+        String date = Integer.toString(calendar.get(Calendar.DATE));
+        int x = (size - metrics.stringWidth(date)) / 2;
+        graphics.setColor(Style.DEFAULT_FOREGROUND);
+        graphics.drawString(date, x, size / 16 * 10);
+        return image;
     }
     
     
