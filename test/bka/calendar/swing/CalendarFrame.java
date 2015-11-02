@@ -29,6 +29,7 @@ public class CalendarFrame extends javax.swing.JFrame {
         gregorianPanel.addMouseListener(mouseListener);
         republicanPanel.addMouseListener(mouseListener);
         earthianPanel.addMouseListener(mouseListener);
+        selectedPanel = gregorianPanel;
         selectedCalendar = gregorianCalendar;
     }
     
@@ -160,7 +161,7 @@ public class CalendarFrame extends javax.swing.JFrame {
         }
         metrics = graphics.getFontMetrics();
         Formatter formatter = new Formatter(calendar);
-        String text = (! validator.isComplementaryDay(calendar)) ? formatter.monthText() : formatter.yearDayText();
+        String text = (! validator.isComplementaryDay(calendar)) ? formatter.monthText(selectedPanel.getLocale()) : formatter.yearDayText();
         x = (size - metrics.stringWidth(text)) / 2;
         graphics.setColor((textColor == null) ? Style.DEFAULT_FOREGROUND : textColor);
         graphics.drawString(text, x, size - size / 4);
@@ -242,14 +243,14 @@ public class CalendarFrame extends javax.swing.JFrame {
 
         @Override
         public void mouseEntered(MouseEvent evt) {
-            Object source = evt.getSource();
-            if (source == gregorianPanel) {
+            selectedPanel = (javax.swing.JPanel) evt.getSource();
+            if (selectedPanel == gregorianPanel) {
                 selectedCalendar = gregorianCalendar;
             }
-            else if (source == republicanPanel) {
+            else if (selectedPanel == republicanPanel) {
                 selectedCalendar = republicanCalendar;
             }
-            else if (source == earthianPanel) {
+            else if (selectedPanel == earthianPanel) {
                 selectedCalendar = earthianCalendar;
             }
         }
@@ -306,6 +307,7 @@ public class CalendarFrame extends javax.swing.JFrame {
     };
     
 
+    private javax.swing.JPanel selectedPanel;
     private Calendar selectedCalendar;
     
     

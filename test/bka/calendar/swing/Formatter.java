@@ -67,26 +67,26 @@ class Formatter {
     }
     
     
-    String monthText() {
+    String monthText(Locale locale) {
         StringBuilder key = new StringBuilder(MONTH_PROPERTY);
         key.append(calendar.get(Calendar.MONTH));
         if (bundle != null && bundle.containsKey(key.toString())) {
             return bundle.getString(key.toString());
         }
         else {
-            java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("MMMM");
+            java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("MMMM", locale);
             return format.format(calendar.getTime());
         }
     }
     
     
-    String weekdayText() {
+    String weekdayText(Locale locale) {
         String key = WEEKDAY_PROPERTY + Integer.toString(calendar.get(Calendar.DAY_OF_WEEK));
         if (bundle != null && bundle.containsKey(key)) {
             return bundle.getString(key);  
         }
         else {
-            java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("EEEE");
+            java.text.SimpleDateFormat format = new java.text.SimpleDateFormat("EEEE", locale);
             return format.format(calendar.getTime());
         }
     }

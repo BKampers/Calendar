@@ -76,10 +76,10 @@ class CalendarPanel extends javax.swing.JPanel {
             String dateString = Integer.toString(dayOfMonth);
             dateLabel.setText(dateString);
             boolean complementaryDays = validator.isComplementaryDay(calendar);
-            String dayName = (! complementaryDays) ? formatter.weekdayText() : formatter.yearDayText();
+            String dayName = (! complementaryDays) ? formatter.weekdayText(getLocale()) : formatter.yearDayText();
             weekdayLabel.setText(dayName);
             weekdayLabel.setForeground((validator.isSabbath(calendar)) ? Style.HOLYDAY_FOREGROUND : Style.DEFAULT_FOREGROUND);
-            monthLabel.setText((! complementaryDays) ? formatter.monthText() : "");
+            monthLabel.setText((! complementaryDays) ? formatter.monthText(getLocale()) : "");
             yearLabel.setText(formatter.yearText());
             weekLabel.setText(formatter.weekText());
             double minuteValue = minute + (double) second / secondMaximum;
