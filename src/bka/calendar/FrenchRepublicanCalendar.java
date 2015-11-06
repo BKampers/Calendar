@@ -6,38 +6,38 @@ import java.util.Calendar;
 public class FrenchRepublicanCalendar extends Calendar {
 
     
-    public static final int VENDÉMIAIRE =  0;
-    public static final int BRUMAIRE    =  1;
-    public static final int FRIMAIRE    =  2;
-    public static final int NIVÔSE      =  3;
-    public static final int PLUVIÔSE    =  4;
-    public static final int VENTÔSE     =  5;
-    public static final int GERMINAL    =  6;
-    public static final int FLORÉAL     =  7;
-    public static final int PRAIRIAL    =  8;
-    public static final int MESSIDOR    =  9;
-    public static final int THERMIDOR   = 10;
-    public static final int FRUCTIDOR   = 11;
+    public static final int VENDÉMIAIRE = 0;
+    public static final int BRUMAIRE = 1;
+    public static final int FRIMAIRE = 2;
+    public static final int NIVOSE = 3;
+    public static final int PLUVIOSE =  4;
+    public static final int VENTOSE = 5;
+    public static final int GERMINAL = 6;
+    public static final int FLORÉAL = 7;
+    public static final int PRAIRIAL = 8;
+    public static final int MESSIDOR = 9;
+    public static final int THERMIDOR = 10;
+    public static final int FRUCTIDOR = 11;
     
     public static final int JOURS_COMPLÉMENTAIRES = 12;
     
     
-    public static final int PRIMIDI  = 0;
-    public static final int DUODI    = 1;
-    public static final int TRIDI    = 2;
-    public static final int QUARTIDI = 3;
-    public static final int QUINTIDI = 4;
-    public static final int SEXTIDI  = 5;
-    public static final int SEPTIDI  = 6;
-    public static final int OCTIDI   = 7;
-    public static final int NONIDI   = 8;
-    public static final int DÉCADI   = 9;
+    public static final int PRIMIDI = 1;
+    public static final int DUODI = 2;
+    public static final int TRIDI = 3;
+    public static final int QUARTIDI = 4;
+    public static final int QUINTIDI = 5;
+    public static final int SEXTIDI = 6;
+    public static final int SEPTIDI = 7;
+    public static final int OCTIDI = 8;
+    public static final int NONIDI = 9;
+    public static final int DÉCADI  = 10;
     
-    public static final int JOUR_DE_LA_VERTU      = 0;
-    public static final int JOUR_DU_GÉNIE         = 1;
-    public static final int JOUR_DU_TRAVAIL       = 2;
-    public static final int JOUR_DE_L_OPINION     = 3;
-    public static final int JOUR_DES_RÉCOMPENSES  = 4;
+    public static final int JOUR_DE_LA_VERTU = 0;
+    public static final int JOUR_DU_GÉNIE = 1;
+    public static final int JOUR_DU_TRAVAIL = 2;
+    public static final int JOUR_DE_L_OPINION = 3;
+    public static final int JOUR_DES_RÉCOMPENSES = 4;
     public static final int JOUR_DE_LA_RÉVOLUTION = 5;
 
     
@@ -60,7 +60,7 @@ public class FrenchRepublicanCalendar extends Calendar {
 
     @Override
     protected void computeFields() {
-        fields[ERA] = (EPOCH <= time) ? 1 : 0;
+        fields[ERA] = 1;
         isSet[ERA] = true;
         long remainder = time - LEAP_ORIGIN;
         int periodCount = (int) (remainder / FOUR_MILLENNIA);
@@ -92,7 +92,7 @@ public class FrenchRepublicanCalendar extends Calendar {
         yearStart += periodCount * ONE_YEAR;
         fields[YEAR] += periodCount;
         isSet[YEAR] = true;
-//        if (fields[ERA] == 0) {
+//        if (EPOCH > time) {
 //            //fields[YEAR]--;
 //            yearStart -= ONE_YEAR;
 //            if (isLeapYear(fields[YEAR])) {
@@ -114,7 +114,7 @@ public class FrenchRepublicanCalendar extends Calendar {
         isSet[DAY_OF_MONTH] = true;
         fields[DAY_OF_YEAR] = dayIndex + 1;
         isSet[DAY_OF_YEAR] = true;
-        fields[DAY_OF_WEEK] = dayIndex % DAYS_PER_WEEK;
+        fields[DAY_OF_WEEK] = dayIndex % DAYS_PER_WEEK + 1;
         isSet[DAY_OF_WEEK] = true;
         fields[DAY_OF_WEEK_IN_MONTH] = (fields[DAY_OF_MONTH] - 1) / DAYS_PER_WEEK + 1;
         isSet[DAY_OF_WEEK_IN_MONTH] = true;
@@ -155,7 +155,7 @@ public class FrenchRepublicanCalendar extends Calendar {
     @Override
     public int getMinimum(int field) {
         switch (field) {
-            case ERA                  : return 0;
+            case ERA                  : return 1;
             case YEAR                 : return 1;
             case MONTH                : return VENDÉMIAIRE;
             case WEEK_OF_YEAR         : return 1;

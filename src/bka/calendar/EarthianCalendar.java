@@ -239,7 +239,7 @@ public class EarthianCalendar extends Calendar {
 
     
     private void computeYearFields(DateCalculations calculations) {
-        setField(ERA, 0);
+        setField(ERA, 1);
         setField(YEAR, calculations.year);
         setField(DAY_OF_YEAR, calculations.dayOfYear);
         setField(DAY_OF_WEEK, calculations.dayOfWeekIndex + 1);
@@ -406,7 +406,7 @@ public class EarthianCalendar extends Calendar {
     private static final int DAYS_PER_LEAP_YEAR = 366;
     
     static final int MIN_VALUES[] = {
-        0,                     // ERA
+        1,                     // ERA
         Integer.MIN_VALUE,     // YEAR
         ARIES,                 // MONTH
         1,                     // WEEK_OF_YEAR
@@ -426,7 +426,7 @@ public class EarthianCalendar extends Calendar {
     };
     
     static final int LEAST_MAX_VALUES[] = {
-        0,                     // ERA
+        1,                     // ERA
         Integer.MAX_VALUE,     // YEAR
         PISCES,                // MONTH
         52,                    // WEEK_OF_YEAR
@@ -446,7 +446,7 @@ public class EarthianCalendar extends Calendar {
     };
     
     static final int MAX_VALUES[] = {
-        0,                    // ERA
+        1,                    // ERA
         Integer.MAX_VALUE,    // YEAR
         PISCES,               // MONTH
         53,                   // WEEK_OF_YEAR
