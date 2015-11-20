@@ -154,10 +154,10 @@ public class CalendarFrame extends javax.swing.JFrame {
         graphics.setColor((textColor == null) ? validator.isSabbath(calendar) ? Style.HOLYDAY_FOREGROUND : Style.DEFAULT_FOREGROUND : textColor);
         graphics.drawString(date, x, size / 2);
         if (! validator.isComplementaryDay(calendar)) {
-            graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, size / 6));        
+            graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, size / 8));        
         }
         else {
-            graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, size / 15));
+            graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, size / 16));
         }
         metrics = graphics.getFontMetrics();
         Formatter formatter = new Formatter(calendar);
