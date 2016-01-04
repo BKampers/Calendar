@@ -21,11 +21,7 @@ class CalendarPanel extends javax.swing.JPanel {
         minuteMaximum = calendar.getMaximum(Calendar.MINUTE) + 1;
         secondMaximum = calendar.getMaximum(Calendar.SECOND) + 1;
         initComponents();
-        if (name.isEmpty()) {
-            Dimension size = getPreferredSize();
-            size.height += 18;
-            setPreferredSize(size);
-        }
+        setNameSize();
         clock.setDiameter(2 * CLOCK_RADIUS);
         clock.setBackground(Color.WHITE);
         Point center = new java.awt.Point(CLOCK_RADIUS, CLOCK_RADIUS);
@@ -61,6 +57,7 @@ class CalendarPanel extends javax.swing.JPanel {
         clock.addRing(hourRing);
         clockPanel.add(clock);
     }
+
 
     
     @Override
@@ -200,6 +197,15 @@ class CalendarPanel extends javax.swing.JPanel {
         add(datePanel, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
    
+
+    private void setNameSize() {
+        if (name.isEmpty()) {
+            Dimension size = getPreferredSize();
+            size.height += 18;
+            setPreferredSize(size);
+        }
+    }
+
     
     private Font getDefaultFont(int size) {
         return new Font(Style.DEFAULT_FONT_NAME, Font.PLAIN, size);

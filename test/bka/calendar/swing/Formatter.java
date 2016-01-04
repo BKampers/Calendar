@@ -5,7 +5,6 @@
 
 package bka.calendar.swing;
 
-
 import java.util.*;
 import java.util.logging.*;
 
@@ -59,11 +58,23 @@ class Formatter {
             }
             text.append(' ');
             text.append(week);
+            if (week == calendar.getMinimum(Calendar.WEEK_OF_YEAR) && calendar.get(Calendar.MONTH) == calendar.getMaximum(Calendar.MONTH)) {
+                appendWeekYear(text, 1);
+            }
+            else if (week >= calendar.getMaximum(Calendar.WEEK_OF_YEAR) - 1 && calendar.get(Calendar.MONTH) == calendar.getMinimum(Calendar.MONTH)) {
+                appendWeekYear(text, -1);
+            }
             return text.toString();
         }
         else {
             return "";
         }
+    }
+
+    private void appendWeekYear(StringBuilder text, int offset) {
+        text.append(" (");
+        text.append(calendar.get(Calendar.YEAR) + offset);
+        text.append(')');
     }
     
     
@@ -101,7 +112,7 @@ class Formatter {
         }
     }
     
-  
+    
     private final Calendar calendar;
     private final ResourceBundle bundle;
 
