@@ -18,9 +18,9 @@ public class CalendarFrame extends javax.swing.JFrame {
 
     
     public CalendarFrame() {
-        gregorianPanel = new CalendarPanel(gregorianCalendar, getValidator(gregorianCalendar));
-        republicanPanel = new CalendarPanel(republicanCalendar, getValidator(republicanCalendar));
-        earthianPanel = new CalendarPanel(earthianCalendar, getValidator(earthianCalendar));
+        gregorianPanel = new CalendarPanel(gregorianCalendar, getValidator(gregorianCalendar), Calendar.HOUR);
+        republicanPanel = new CalendarPanel(republicanCalendar, getValidator(republicanCalendar), Calendar.HOUR_OF_DAY);
+        earthianPanel = new CalendarPanel(earthianCalendar, getValidator(earthianCalendar), Calendar.HOUR_OF_DAY);
         initComponents();
         calendarsPanel.add(gregorianPanel);
         calendarsPanel.add(republicanPanel);

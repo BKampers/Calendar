@@ -12,12 +12,13 @@ import java.util.*;
 class CalendarPanel extends javax.swing.JPanel {
 
 
-    CalendarPanel(Calendar calendar, Validator validator) {
+    CalendarPanel(Calendar calendar, Validator validator, int hourField) {
         this.calendar = calendar;
         this.validator = validator;
+        this.hourField = (hourField == Calendar.HOUR_OF_DAY) ? hourField : Calendar.HOUR;
         formatter = new Formatter(calendar);
         name = formatter.nameText();
-        hourMaximum = calendar.getMaximum(Calendar.HOUR) + 1;
+        hourMaximum = calendar.getMaximum(hourField) + 1;
         minuteMaximum = calendar.getMaximum(Calendar.MINUTE) + 1;
         secondMaximum = calendar.getMaximum(Calendar.SECOND) + 1;
         initComponents();
@@ -43,9 +44,11 @@ class CalendarPanel extends javax.swing.JPanel {
         secondHand.setTurningPoint(center);
         secondHand.setScale(secondHandScale);
         Scale hourValueScale = new Scale();
-        hourValueScale.setValueRange(1, hourMaximum);
-        hourValueScale.setAngleRange(1.0 / hourMaximum, 1.0);
+        double interval = (hourMaximum <= 12) ? 1.0 : 2.0;
+        hourValueScale.setValueRange(interval, hourMaximum);
+        hourValueScale.setAngleRange(interval / hourMaximum, 1.0);
         SimpleValueRing hourRing = new SimpleValueRing();
+        hourRing.setInterval(interval);
         hourRing.setScale(hourValueScale);
         hourRing.setRadius(37);
         hourRing.setCenter(center);
@@ -67,7 +70,7 @@ class CalendarPanel extends javax.swing.JPanel {
             calendar.setTimeInMillis(System.currentTimeMillis());
             int month = calendar.get(Calendar.MONTH);
             int dayOfMonth = calendar.get(Calendar.DATE);
-            int hour = calendar.get(Calendar.HOUR);
+            int hour = calendar.get(hourField);
             int minute = calendar.get(Calendar.MINUTE);
             int second = calendar.get(Calendar.SECOND);
             String dateString = Integer.toString(dayOfMonth);
@@ -216,6 +219,8 @@ class CalendarPanel extends javax.swing.JPanel {
     private final Validator validator;
     private final Formatter formatter;
     private final String name;
+    
+    private final int hourField;
 
     private final int hourMaximum;
     private final int minuteMaximum;
