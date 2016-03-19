@@ -12,10 +12,10 @@ import java.util.*;
 class CalendarPanel extends javax.swing.JPanel {
 
 
-    CalendarPanel(Calendar calendar, Validator validator, int hourField) {
+    CalendarPanel(Calendar calendar, Behavior behavior) {
         this.calendar = calendar;
-        this.validator = validator;
-        this.hourField = (hourField == Calendar.HOUR_OF_DAY) ? hourField : Calendar.HOUR;
+        this.behavior = behavior;
+        this.hourField = behavior.showNaturalDayClock() ? Calendar.HOUR_OF_DAY : Calendar.HOUR;
         formatter = new Formatter(calendar);
         name = formatter.nameText();
         hourMaximum = calendar.getMaximum(hourField) + 1;
@@ -75,10 +75,10 @@ class CalendarPanel extends javax.swing.JPanel {
             int second = calendar.get(Calendar.SECOND);
             String dateString = Integer.toString(dayOfMonth);
             dateLabel.setText(dateString);
-            boolean complementaryDays = validator.isComplementaryDay(calendar);
+            boolean complementaryDays = behavior.isComplementaryDay(calendar);
             String dayName = (! complementaryDays) ? formatter.weekdayText(getLocale()) : formatter.yearDayText();
             weekdayLabel.setText(dayName);
-            weekdayLabel.setForeground((validator.isSabbath(calendar)) ? Style.HOLYDAY_FOREGROUND : Style.DEFAULT_FOREGROUND);
+            weekdayLabel.setForeground((behavior.isSabbath(calendar)) ? Style.HOLYDAY_FOREGROUND : Style.DEFAULT_FOREGROUND);
             monthLabel.setText((! complementaryDays) ? formatter.monthText(getLocale()) : "");
             yearLabel.setText(formatter.yearText());
             weekLabel.setText(formatter.weekText());
@@ -87,8 +87,15 @@ class CalendarPanel extends javax.swing.JPanel {
             minuteHand.setValue(minuteValue);
             hourHand.setValue(hour + minuteValue / minuteMaximum);
             clock.repaint();
-            datePanel.setToolTipText(String.format("%d-%02d-%02d", calendar.get(Calendar.YEAR), month + 1, dayOfMonth));
-            clockPanel.setToolTipText(String.format("%d:%02d", calendar.get(Calendar.HOUR_OF_DAY), minute));
+            datePanel.setToolTipText(String.format(behavior.getDateFormat(), calendar.get(Calendar.YEAR), month + 1, dayOfMonth));
+            if (behavior.showNaturalDayClock()) {
+                clockPanel.setToolTipText(String.format(behavior.getTimeFormat(), hour, minute));
+            }
+            else {
+                String ampm = (calendar.get(Calendar.AM_PM) == Calendar.AM) ? "AM" : "PM";
+
+                clockPanel.setToolTipText(String.format(behavior.getTimeFormat(), (hour == 0) ? 12 : hour, minute, ampm));
+            }
         }
     }
     
@@ -216,7 +223,7 @@ class CalendarPanel extends javax.swing.JPanel {
 
     
     private final Calendar calendar;
-    private final Validator validator;
+    private final Behavior behavior;
     private final Formatter formatter;
     private final String name;
     

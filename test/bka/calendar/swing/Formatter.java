@@ -40,6 +40,9 @@ class Formatter {
             bka.numeric.roman.Converter roman = new bka.numeric.roman.Converter();
             return roman.standard(calendar.get(Calendar.YEAR));
         }
+        else if (calendar instanceof bka.calendar.EarthianCalendar) {
+            return String.format("%04d", calendar.get(Calendar.YEAR));
+        }
         else {
             return Integer.toString(calendar.get(Calendar.YEAR));
         }

@@ -18,9 +18,9 @@ public class CalendarFrame extends javax.swing.JFrame {
 
     
     public CalendarFrame() {
-        gregorianPanel = new CalendarPanel(gregorianCalendar, getValidator(gregorianCalendar), Calendar.HOUR);
-        republicanPanel = new CalendarPanel(republicanCalendar, getValidator(republicanCalendar), Calendar.HOUR_OF_DAY);
-        earthianPanel = new CalendarPanel(earthianCalendar, getValidator(earthianCalendar), Calendar.HOUR_OF_DAY);
+        gregorianPanel = new CalendarPanel(gregorianCalendar, getBehavior(gregorianCalendar));
+        republicanPanel = new CalendarPanel(republicanCalendar, getBehavior(republicanCalendar));
+        earthianPanel = new CalendarPanel(earthianCalendar, getBehavior(earthianCalendar));
         initComponents();
         calendarsPanel.add(gregorianPanel);
         calendarsPanel.add(republicanPanel);
@@ -142,7 +142,7 @@ public class CalendarFrame extends javax.swing.JFrame {
 
     
     private BufferedImage createDefaultImage(Calendar calendar, int size, Color textColor) {
-        Validator validator = getValidator(calendar);
+        Behavior validator = getBehavior(calendar);
         BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = (Graphics2D) image.getGraphics();
         drawImageBackground(graphics, size);
@@ -194,15 +194,15 @@ public class CalendarFrame extends javax.swing.JFrame {
     }
     
     
-    private Validator getValidator(Calendar calendar) {
+    private Behavior getBehavior(Calendar calendar) {
         if (calendar instanceof FrenchRepublicanCalendar) {
-            return REPUBLICAN_VALIDATOR;
+            return FRENCH_REPUBLICAN_BEHAVIOR;
         }
         else if (calendar instanceof EarthianCalendar) {
-            return EARTHIAN_VALIDATOR;
+            return EARTHIAN_BEHAVIOR;
         }
         else {
-            return DEFAULT_VALIDATOR;
+            return DEFAULT_BEHAVIOR;
         }
     }
     
@@ -262,7 +262,7 @@ public class CalendarFrame extends javax.swing.JFrame {
     };
     
     
-    private static final Validator DEFAULT_VALIDATOR = new  Validator() {
+    private static final Behavior DEFAULT_BEHAVIOR = new Behavior() {
         
         @Override
         public boolean isSabbath(Calendar calendar) {
@@ -273,11 +273,26 @@ public class CalendarFrame extends javax.swing.JFrame {
         public boolean isComplementaryDay(Calendar calendar) {
             return false;
         }
+
+        @Override
+        public boolean showNaturalDayClock() {
+            return false;
+        }
+
+        @Override
+        public String getDateFormat() {
+            return "%d/%02d/%02d";
+        }
+
+        @Override
+        public String getTimeFormat() {
+            return "%d:%02d %s";
+        }
         
     };
     
 
-    private static final Validator REPUBLICAN_VALIDATOR = new Validator() {
+    private static final Behavior FRENCH_REPUBLICAN_BEHAVIOR = new Behavior() {
         
         @Override
         public boolean isSabbath(Calendar calendar) {
@@ -289,10 +304,24 @@ public class CalendarFrame extends javax.swing.JFrame {
             return calendar.get(Calendar.MONTH) == FrenchRepublicanCalendar.JOURS_COMPLÉMENTAIRES;
         }
         
+        @Override
+        public boolean showNaturalDayClock() {
+            return true;
+        }
+
+        @Override
+        public String getDateFormat() {
+            return "%d/%02d/%02d";
+        }
+
+        @Override
+        public String getTimeFormat() {
+            return "%d:%02d";
+        }
     };
     
     
-    private static final Validator EARTHIAN_VALIDATOR = new  Validator() {
+    private static final Behavior EARTHIAN_BEHAVIOR = new  Behavior() {
         
         @Override
         public boolean isSabbath(Calendar calendar) {
@@ -304,6 +333,20 @@ public class CalendarFrame extends javax.swing.JFrame {
             return false;
         }
         
+        @Override
+        public boolean showNaturalDayClock() {
+            return true;
+        }
+
+        @Override
+        public String getDateFormat() {
+            return "%04d/%02d/%02d";
+        }
+
+        @Override
+        public String getTimeFormat() {
+            return "%d:%02d";
+        }
     };
     
 

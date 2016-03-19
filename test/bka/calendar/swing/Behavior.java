@@ -6,10 +6,16 @@ package bka.calendar.swing;
 import java.util.Calendar;
 
 
-interface Validator {
+interface Behavior {
 
     boolean isSabbath(Calendar calendar);
 
     boolean isComplementaryDay(Calendar calendar);
+
+    boolean showNaturalDayClock();
+
+    String getDateFormat();
+
+    String getTimeFormat();
     
 }
