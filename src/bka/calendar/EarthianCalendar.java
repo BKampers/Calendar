@@ -31,6 +31,35 @@ public class EarthianCalendar extends Calendar {
     public static final int VENUS = Calendar.FRIDAY;
     public static final int SATURNUS = Calendar.SATURDAY;
     
+    
+    public EarthianCalendar() {
+        time = System.currentTimeMillis();
+        isTimeSet = true;
+        setTimeZone(TimeZone.getDefault());
+    }
+    
+    
+    public EarthianCalendar(int year, int month, int dayOfMonth, int hourOfDay, int minute, int second) {
+        setField(YEAR, year);
+        setField(MONTH, month);
+        setField(DAY_OF_MONTH, dayOfMonth);
+        setField(HOUR_OF_DAY, hourOfDay);
+        setField(MINUTE, minute);
+        setField(SECOND, second);
+        setField(MILLISECOND, 0);
+        setTimeZone(TimeZone.getDefault());
+    }
+    
+
+    public EarthianCalendar(int year, int month, int dayOfMonth, int hourOfDay, int minute) {
+        this(year, month, dayOfMonth, hourOfDay, minute, 0);        
+    }
+    
+    
+    public EarthianCalendar(int year, int month, int dayOfMonth) {
+        this(year, month, dayOfMonth, 0, 0, 0);
+    }
+    
 
     @Override
     public void add(int field, int amount) {
@@ -186,6 +215,7 @@ public class EarthianCalendar extends Calendar {
     private void setField(int fieldIndex, int value) {
         fields[fieldIndex] = value;
         isSet[fieldIndex] = true;
+        areFieldsSet = false;
     }
     
     
@@ -322,13 +352,13 @@ public class EarthianCalendar extends Calendar {
     
     private int dayCountForMonth(int month, int year) {
         if (month % 2 == 0) {
-            return getLeastMaximum(MONTH);
+            return getLeastMaximum(DAY_OF_MONTH);
         }
         else if (month != PISCES) {
-            return getMaximum(MONTH);
+            return getMaximum(DAY_OF_MONTH);
         }
         else {
-            return (isLeapYear(year)) ? getMaximum(MONTH) : getLeastMaximum(MONTH);
+            return (isLeapYear(year)) ? getMaximum(DAY_OF_MONTH) : getLeastMaximum(DAY_OF_MONTH);
         }
     }
 

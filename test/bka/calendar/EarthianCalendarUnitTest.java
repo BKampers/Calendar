@@ -275,6 +275,11 @@ public class EarthianCalendarUnitTest {
         calendar.add(Calendar.MONTH, -12);
         assertEquals(11, calendar.get(Calendar.MONTH));
         assertEquals(-2, calendar.get(Calendar.YEAR));
+        calendar.set(Calendar.MONTH, 1);
+        calendar.set(Calendar.DAY_OF_MONTH, 31);
+        calendar.add(Calendar.MONTH, 1);
+        assertEquals(2, calendar.get(Calendar.MONTH));
+        assertEquals(30, calendar.get(Calendar.DAY_OF_MONTH));
     }
     
     
@@ -289,6 +294,19 @@ public class EarthianCalendarUnitTest {
     }
     
     
+    @Test
+    public void millisTest() {
+        calendar.set(Calendar.YEAR, -2);
+        calendar.set(Calendar.MONTH, 1);
+        calendar.set(Calendar.DAY_OF_MONTH, 31);
+        long millis = calendar.getTimeInMillis();
+        calendar.setTimeInMillis(millis);
+        assertEquals(-2, calendar.get(Calendar.YEAR));
+        assertEquals(1, calendar.get(Calendar.MONTH));
+        assertEquals(31, calendar.get(Calendar.DAY_OF_MONTH));
+    }
+   
+   
    private int dayCount(int year) {
         return (isLeapYear(year)) ? 366 : 365;
     }
