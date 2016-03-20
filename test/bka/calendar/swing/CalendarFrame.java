@@ -321,7 +321,7 @@ public class CalendarFrame extends javax.swing.JFrame {
     };
     
     
-    private static final Behavior EARTHIAN_BEHAVIOR = new  Behavior() {
+    private static final Behavior EARTHIAN_BEHAVIOR = new Behavior() {
         
         @Override
         public boolean isSabbath(Calendar calendar) {
@@ -345,7 +345,7 @@ public class CalendarFrame extends javax.swing.JFrame {
 
         @Override
         public String getTimeFormat() {
-            return "%d:%02d";
+            return "%02d:%02d";
         }
     };
     
