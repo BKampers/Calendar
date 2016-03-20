@@ -93,7 +93,6 @@ class CalendarPanel extends javax.swing.JPanel {
             }
             else {
                 String ampm = (calendar.get(Calendar.AM_PM) == Calendar.AM) ? "AM" : "PM";
-
                 clockPanel.setToolTipText(String.format(behavior.getTimeFormat(), (hour == 0) ? 12 : hour, minute, ampm));
             }
         }

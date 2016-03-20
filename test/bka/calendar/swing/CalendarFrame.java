@@ -120,8 +120,7 @@ public class CalendarFrame extends javax.swing.JFrame {
         try {
             Class applicationClass = Class.forName("com.apple.eawt.Application");
             Method getApplication = applicationClass.getMethod("getApplication");
-            Object application;
-            application = getApplication.invoke(null);
+            Object application = getApplication.invoke(null);
             Method setDockIconImage = applicationClass.getMethod("setDockIconImage", Image.class);
             Object[] imageParameter = new Object[] { createDefaultImage(calendar, 1024, null) };
             setDockIconImage.invoke(application, imageParameter);
@@ -184,7 +183,7 @@ public class CalendarFrame extends javax.swing.JFrame {
     }
 
     
-    private void drawImageBackground(Graphics2D graphics, int size) {
+    private static void drawImageBackground(Graphics2D graphics, int size) {
         int margin = size / 16;
         int innerSize = size - 2 * margin;
         graphics.setColor(Color.WHITE);
@@ -194,7 +193,7 @@ public class CalendarFrame extends javax.swing.JFrame {
     }
     
     
-    private Behavior getBehavior(Calendar calendar) {
+    private static Behavior getBehavior(Calendar calendar) {
         if (calendar instanceof FrenchRepublicanCalendar) {
             return FRENCH_REPUBLICAN_BEHAVIOR;
         }
@@ -281,12 +280,12 @@ public class CalendarFrame extends javax.swing.JFrame {
 
         @Override
         public String getDateFormat() {
-            return "%d/%02d/%02d";
+            return DEFAULT_DATE_FORMAT;
         }
 
         @Override
         public String getTimeFormat() {
-            return "%d:%02d %s";
+            return CLASSIC_TIME_FORMAT;
         }
         
     };
@@ -311,12 +310,12 @@ public class CalendarFrame extends javax.swing.JFrame {
 
         @Override
         public String getDateFormat() {
-            return "%d/%02d/%02d";
+            return DEFAULT_DATE_FORMAT;
         }
 
         @Override
         public String getTimeFormat() {
-            return "%d:%02d";
+            return REPUBLICAN_TIME_FORMAT;
         }
     };
     
@@ -340,13 +339,14 @@ public class CalendarFrame extends javax.swing.JFrame {
 
         @Override
         public String getDateFormat() {
-            return "%04d/%02d/%02d";
+            return EARTHIAN_DATE_FORMAT;
         }
 
         @Override
         public String getTimeFormat() {
-            return "%02d:%02d";
+            return DEFAULT_TIME_FORMAT;
         }
+
     };
     
 
@@ -368,5 +368,14 @@ public class CalendarFrame extends javax.swing.JFrame {
     private final CalendarPanel earthianPanel;
     
     private final Timer updateTimer = new Timer(UpdateTask.class.toString());
+
+
+    private static final String DEFAULT_DATE_FORMAT = "%d/%02d/%02d";
+    private static final String EARTHIAN_DATE_FORMAT = "%04d/%02d/%02d";
+
+    private static final String DEFAULT_TIME_FORMAT = "%02d:%02d";
+    private static final String CLASSIC_TIME_FORMAT = "%d:%02d %s";
+    private static final String REPUBLICAN_TIME_FORMAT = "%d:%02d";
+
 
 }
