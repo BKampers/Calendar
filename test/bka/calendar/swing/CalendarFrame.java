@@ -213,15 +213,17 @@ public class CalendarFrame extends javax.swing.JFrame {
             gregorianPanel.repaint();
             republicanPanel.repaint();
             earthianPanel.repaint();
-                    
             int dayOfMonth = selectedCalendar.get(Calendar.DAY_OF_MONTH);
-            if (iconDate != dayOfMonth) {
+            int month = selectedCalendar.get(Calendar.MONTH);
+            if (iconDate != dayOfMonth || iconMonth != month) {
                 setIcon(selectedCalendar);
                 iconDate = dayOfMonth;
+                iconMonth = month;
             }
         }
         
         private int iconDate;
+        private int iconMonth;
 
     }
     
