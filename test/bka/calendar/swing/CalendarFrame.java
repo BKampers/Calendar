@@ -141,7 +141,7 @@ public class CalendarFrame extends javax.swing.JFrame {
 
     
     private BufferedImage createDefaultImage(Calendar calendar, int size, Color textColor) {
-        Behavior validator = getBehavior(calendar);
+        Behavior behavior = getBehavior(calendar);
         BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = (Graphics2D) image.getGraphics();
         drawImageBackground(graphics, size);
@@ -150,9 +150,9 @@ public class CalendarFrame extends javax.swing.JFrame {
         FontMetrics metrics = graphics.getFontMetrics();
         String date = Integer.toString(calendar.get(Calendar.DATE));
         int x = (size - metrics.stringWidth(date)) / 2;
-        graphics.setColor((textColor == null) ? validator.isSabbath(calendar) ? Style.HOLYDAY_FOREGROUND : Style.DEFAULT_FOREGROUND : textColor);
+        graphics.setColor((textColor == null) ? behavior.isSabbath(calendar) || behavior.isComplementaryDay(calendar) ? Style.HOLYDAY_FOREGROUND : Style.DEFAULT_FOREGROUND : textColor);
         graphics.drawString(date, x, size / 2);
-        if (! validator.isComplementaryDay(calendar)) {
+        if (! behavior.isComplementaryDay(calendar)) {
             graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, size / 8));        
         }
         else {
@@ -160,7 +160,7 @@ public class CalendarFrame extends javax.swing.JFrame {
         }
         metrics = graphics.getFontMetrics();
         Formatter formatter = new Formatter(calendar);
-        String text = (! validator.isComplementaryDay(calendar)) ? formatter.monthText(selectedPanel.getLocale()) : formatter.yearDayText();
+        String text = (! behavior.isComplementaryDay(calendar)) ? formatter.monthText(selectedPanel.getLocale()) : formatter.yearDayText();
         x = (size - metrics.stringWidth(text)) / 2;
         graphics.setColor((textColor == null) ? Style.DEFAULT_FOREGROUND : textColor);
         graphics.drawString(text, x, size - size / 4);
@@ -286,6 +286,11 @@ public class CalendarFrame extends javax.swing.JFrame {
         }
         
         @Override
+        public boolean showMonth(Calendar calendar) {
+            return true;
+        }
+
+        @Override
         public boolean showNaturalDayClock() {
             return false;
         }
@@ -326,6 +331,11 @@ public class CalendarFrame extends javax.swing.JFrame {
         }
         
         @Override
+        public boolean showMonth(Calendar calendar) {
+            return ! isComplementaryDay(calendar);
+        }
+
+        @Override
         public boolean showNaturalDayClock() {
             return true;
         }
@@ -339,6 +349,7 @@ public class CalendarFrame extends javax.swing.JFrame {
         public String getTimeFormat() {
             return REPUBLICAN_TIME_FORMAT;
         }
+
     };
     
     
@@ -364,6 +375,11 @@ public class CalendarFrame extends javax.swing.JFrame {
             return false;
         }
         
+        @Override
+        public boolean showMonth(Calendar calendar) {
+            return true;
+        }
+
         @Override
         public boolean showNaturalDayClock() {
             return true;
