@@ -30,7 +30,7 @@ class Formatter {
             return bundle.getString(NAME_PROPERTY);
         }
         else {
-            return "";
+            return calendar.getCalendarType();
         }
     }
 
@@ -107,8 +107,9 @@ class Formatter {
 
 
     String yearDayText() {
-        if (bundle != null) {
-            return bundle.getString(DAY_PROPERTY + Integer.toString(calendar.get(Calendar.DAY_OF_YEAR)));
+        String key = DAY_PROPERTY + Integer.toString(calendar.get(Calendar.DAY_OF_YEAR));
+        if (bundle != null && bundle.containsKey(key)) {
+            return bundle.getString(key);
         }
         else {
             return "";

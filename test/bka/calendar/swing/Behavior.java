@@ -12,6 +12,10 @@ interface Behavior {
 
     boolean isComplementaryDay(Calendar calendar);
 
+    boolean showDayNameOfWeek(Calendar calendar);
+    
+    boolean showDayNameOfYear(Calendar calendar);
+    
     boolean showNaturalDayClock();
 
     String getDateFormat();

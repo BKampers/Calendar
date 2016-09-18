@@ -45,9 +45,9 @@ public class CalendarFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Calendars");
-        setBounds(new java.awt.Rectangle(0, 23, 1200, 330));
+        setBounds(new java.awt.Rectangle(0, 23, 1050, 380));
         setName("calendarFrame"); // NOI18N
-        setPreferredSize(new java.awt.Dimension(1200, 330));
+        setPreferredSize(new java.awt.Dimension(1050, 380));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -62,7 +62,7 @@ public class CalendarFrame extends javax.swing.JFrame {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(calendarsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 254, Short.MAX_VALUE)
+                .addComponent(calendarsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 619, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -276,6 +276,16 @@ public class CalendarFrame extends javax.swing.JFrame {
         }
 
         @Override
+        public boolean showDayNameOfWeek(Calendar calendar) {
+            return true;
+        }
+
+        @Override
+        public boolean showDayNameOfYear(Calendar calendar) {
+            return false;
+        }
+        
+        @Override
         public boolean showNaturalDayClock() {
             return false;
         }
@@ -289,7 +299,7 @@ public class CalendarFrame extends javax.swing.JFrame {
         public String getTimeFormat() {
             return CLASSIC_TIME_FORMAT;
         }
-        
+
     };
     
 
@@ -303,6 +313,16 @@ public class CalendarFrame extends javax.swing.JFrame {
         @Override
         public boolean isComplementaryDay(Calendar calendar) {
             return calendar.get(Calendar.MONTH) == FrenchRepublicanCalendar.JOURS_COMPLÉMENTAIRES;
+        }
+        
+        @Override
+        public boolean showDayNameOfWeek(Calendar calendar) {
+            return ! isComplementaryDay(calendar);
+        }
+
+        @Override
+        public boolean showDayNameOfYear(Calendar calendar) {
+            return isComplementaryDay(calendar);
         }
         
         @Override
@@ -331,6 +351,16 @@ public class CalendarFrame extends javax.swing.JFrame {
         
         @Override
         public boolean isComplementaryDay(Calendar calendar) {
+            return false;
+        }
+        
+        @Override
+        public boolean showDayNameOfWeek(Calendar calendar) {
+            return true;
+        }
+
+        @Override
+        public boolean showDayNameOfYear(Calendar calendar) {
             return false;
         }
         
