@@ -45,9 +45,9 @@ public class CalendarFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Calendars");
-        setBounds(new java.awt.Rectangle(0, 23, 1050, 380));
+        setBounds(new java.awt.Rectangle(0, 23, 1170, 380));
         setName("calendarFrame"); // NOI18N
-        setPreferredSize(new java.awt.Dimension(1050, 380));
+        setPreferredSize(new java.awt.Dimension(1170, 380));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);

@@ -30,7 +30,13 @@ class Formatter {
             return bundle.getString(NAME_PROPERTY);
         }
         else {
-            return calendar.getCalendarType();
+            String type = calendar.getCalendarType();
+            StringBuilder name = new StringBuilder();
+            if (! type.isEmpty()) {
+                name.append(Character.toUpperCase(type.charAt(0)));
+                name.append(type.substring(1));
+            }
+            return name.toString();
         }
     }
 
