@@ -296,6 +296,11 @@ public class CalendarFrame extends javax.swing.JFrame {
         }
 
         @Override
+        public boolean showMidnightAsZero() {
+            return false;
+        }
+
+        @Override
         public String getDateFormat() {
             return DEFAULT_DATE_FORMAT;
         }
@@ -341,6 +346,11 @@ public class CalendarFrame extends javax.swing.JFrame {
         }
 
         @Override
+        public boolean showMidnightAsZero() {
+            return false;
+        }
+
+        @Override
         public String getDateFormat() {
             return DEFAULT_DATE_FORMAT;
         }
@@ -382,6 +392,11 @@ public class CalendarFrame extends javax.swing.JFrame {
 
         @Override
         public boolean showNaturalDayClock() {
+            return true;
+        }
+
+        @Override
+        public boolean showMidnightAsZero() {
             return true;
         }
 

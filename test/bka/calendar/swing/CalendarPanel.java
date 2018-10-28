@@ -45,8 +45,14 @@ class CalendarPanel extends javax.swing.JPanel {
         secondHand.setScale(secondHandScale);
         Scale hourValueScale = new Scale();
         double interval = (hourMaximum <= 12) ? 1.0 : 2.0;
-        hourValueScale.setValueRange(interval, hourMaximum);
-        hourValueScale.setAngleRange(interval / hourMaximum, 1.0);
+        if (behavior.showMidnightAsZero()) {
+            hourValueScale.setValueRange(0.0, hourMaximum - interval);
+            hourValueScale.setAngleRange(0.0, (hourMaximum - interval) / hourMaximum);
+        }
+        else {
+            hourValueScale.setValueRange(interval, hourMaximum);
+            hourValueScale.setAngleRange(interval / hourMaximum, 1.0);
+        }
         SimpleValueRing hourRing = new SimpleValueRing();
         hourRing.setInterval(interval);
         hourRing.setScale(hourValueScale);

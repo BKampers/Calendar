@@ -3,8 +3,8 @@
  */
 package bka.calendar.swing;
 
-import java.awt.Color;
-import java.util.Calendar;
+
+import java.util.*;
 
 
 interface Behavior {
@@ -20,6 +20,8 @@ interface Behavior {
     public boolean showMonth(Calendar calendar);
 
     boolean showNaturalDayClock();
+    
+    boolean showMidnightAsZero();
 
     String getDateFormat();
 
