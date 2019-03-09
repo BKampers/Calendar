@@ -186,7 +186,7 @@ public class FrenchRepublicanCalendar extends Calendar {
             case WEEK_OF_YEAR         : return 37;
             case WEEK_OF_MONTH        : return WEEKS_PER_MONTH; 
             case DAY_OF_MONTH         : return DAYS_PER_MONTH;
-            case DAY_OF_YEAR          : return 366;
+            case DAY_OF_YEAR          : return DAYS_PER_LEAP_YEAR;
             case DAY_OF_WEEK	      : return DAYS_PER_WEEK;
             case DAY_OF_WEEK_IN_MONTH : return WEEKS_PER_MONTH;
             case AM_PM                : return PM;
@@ -200,6 +200,18 @@ public class FrenchRepublicanCalendar extends Calendar {
         }
         return 0; // Should not occur
     }
+    
+    
+    @Override
+    public int getActualMaximum(int field) {
+        if (field == DAY_OF_MONTH && fields[MONTH] == JOURS_COMPLÉMENTAIRES) {
+            return (isLeapYear(fields[YEAR])) ? MINIMUM_DAYS_PER_MONTH + 1 : MINIMUM_DAYS_PER_MONTH;
+        }
+        if (field == DAY_OF_YEAR) {
+            return (isLeapYear(fields[YEAR])) ? DAYS_PER_LEAP_YEAR : DAYS_PER_REGULAR_YEAR;
+        }
+        return getMaximum(field);
+    }
 
     
     @Override
@@ -212,8 +224,8 @@ public class FrenchRepublicanCalendar extends Calendar {
     public int getLeastMaximum(int field) {
         switch (field) {
             case WEEK_OF_MONTH        : return 1; 
-            case DAY_OF_MONTH         : return 5;
-            case DAY_OF_YEAR          : return 365;
+            case DAY_OF_MONTH         : return MINIMUM_DAYS_PER_MONTH;
+            case DAY_OF_YEAR          : return DAYS_PER_REGULAR_YEAR;
             case DAY_OF_WEEK	      : return JOUR_DES_RÉCOMPENSES;
             case DAY_OF_WEEK_IN_MONTH : return 1;
             default                   : return getMaximum(field);
@@ -226,32 +238,6 @@ public class FrenchRepublicanCalendar extends Calendar {
         return year % 4 == 0 && year % 100 != 0 || year % 400 == 0 && year % 4000 != 0;
     }
     
-    
-    private static final long EPOCH = -5594230800000L; // September 22, 1792 in Unix millis
-    
-    private static final int WEEKS_PER_MONTH = 3;
-    private static final int DAYS_PER_MONTH = 30;
-    private static final int DAYS_PER_WEEK = 10;
-    private static final int HOURS_PER_DAY = 10;
-    private static final int MINUTES_PER_HOUR = 100;
-    private static final int SECONDS_PER_MINUTE = 100;
-    
-    
-    // A day has 1000 * 60 * 60 * 24 millisecons
-    private static final long ONE_DAY = 1000 * 60 * 60 * 24;
-    // A regular year has 365 days
-    private static final long ONE_YEAR = 365 * ONE_DAY;
-    // Four consecutive years have reguarly one leap day
-    private static final long FOUR_YEARS = 4 * ONE_YEAR + ONE_DAY;
-    // A regular century misses one leap year
-    private static final long ONE_CENTURY = 25 * FOUR_YEARS - ONE_DAY;
-    // Four consecutive centuries have one extra leap year
-    private static final long FOUR_CENTURIES = 4 * ONE_CENTURY + ONE_DAY;
-    // Four consecutive millennia miss one leap year
-    private static final long FOUR_MILLENNIA = 10 * FOUR_CENTURIES - ONE_DAY;
-
-    private static final long LEAP_ORIGIN = EPOCH - ONE_YEAR;
-
     
     private static void clock() {
         java.util.GregorianCalendar gregorian = new java.util.GregorianCalendar();
@@ -413,5 +399,33 @@ public class FrenchRepublicanCalendar extends Calendar {
             calendar.get(MILLISECOND));
     }
     
+    
+    private static final long EPOCH = -5594230800000L; // September 22, 1792 in Unix millis
+    
+    private static final int WEEKS_PER_MONTH = 3;
+    private static final int DAYS_PER_REGULAR_YEAR = 365;
+    private static final int DAYS_PER_LEAP_YEAR = 366;    
+    private static final int DAYS_PER_MONTH = 30;
+    private static final int DAYS_PER_WEEK = 10;
+    private static final int HOURS_PER_DAY = 10;
+    private static final int MINUTES_PER_HOUR = 100;
+    private static final int SECONDS_PER_MINUTE = 100;
+
+    private static final int MINIMUM_DAYS_PER_MONTH = 5;
+    
+    // A day has 1000 * 60 * 60 * 24 millisecons
+    private static final long ONE_DAY = 1000 * 60 * 60 * 24;
+    // A regular year has 365 days
+    private static final long ONE_YEAR = DAYS_PER_REGULAR_YEAR * ONE_DAY;
+    // Four consecutive years have reguarly one leap day
+    private static final long FOUR_YEARS = 4 * ONE_YEAR + ONE_DAY;
+    // A regular century misses one leap year
+    private static final long ONE_CENTURY = 25 * FOUR_YEARS - ONE_DAY;
+    // Four consecutive centuries have one extra leap year
+    private static final long FOUR_CENTURIES = 4 * ONE_CENTURY + ONE_DAY;
+    // Four consecutive millennia miss one leap year
+    private static final long FOUR_MILLENNIA = 10 * FOUR_CENTURIES - ONE_DAY;
+
+    private static final long LEAP_ORIGIN = EPOCH - ONE_YEAR;
 
 }

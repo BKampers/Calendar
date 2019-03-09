@@ -123,6 +123,11 @@ class Formatter {
     }
     
     
+    String dayOfYearText() {
+        return (Integer.toString(calendar.get(Calendar.DAY_OF_YEAR)) + " / " + Integer.toString(calendar.getActualMaximum(Calendar.DAY_OF_YEAR)));
+    }
+    
+    
     private final Calendar calendar;
     private final ResourceBundle bundle;
 

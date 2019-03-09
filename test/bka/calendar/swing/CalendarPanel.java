@@ -88,6 +88,7 @@ class CalendarPanel extends javax.swing.JPanel {
             monthLabel.setText(behavior.showMonth(calendar) ? formatter.monthText(getLocale()): "");
             yearLabel.setText(formatter.yearText());
             weekLabel.setText(formatter.weekText());
+            dayOfYearLabel.setText(formatter.dayOfYearText());
             double minuteValue = minute + (double) second / secondMaximum;
             secondHand.setValue(second);
             minuteHand.setValue(minuteValue);
@@ -123,6 +124,7 @@ class CalendarPanel extends javax.swing.JPanel {
         dateLabel = new javax.swing.JLabel();
         monthLabel = new javax.swing.JLabel();
         yearDayLabel = new javax.swing.JLabel();
+        dayOfYearLabel = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createTitledBorder(name));
         setBounds(new java.awt.Rectangle(0, 0, 380, 340));
@@ -192,6 +194,11 @@ class CalendarPanel extends javax.swing.JPanel {
         yearDayLabel.setForeground(Style.DEFAULT_FOREGROUND);
         yearDayLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
+        dayOfYearLabel.setFont(getDefaultFont(10));
+        dayOfYearLabel.setForeground(Style.DEFAULT_FOREGROUND);
+        dayOfYearLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        dayOfYearLabel.setMinimumSize(new java.awt.Dimension(500, 16));
+
         javax.swing.GroupLayout datePanelLayout = new javax.swing.GroupLayout(datePanel);
         datePanel.setLayout(datePanelLayout);
         datePanelLayout.setHorizontalGroup(
@@ -205,7 +212,10 @@ class CalendarPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(dateLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(monthLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE)))
+                        .addComponent(monthLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, datePanelLayout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addComponent(dayOfYearLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
         );
         datePanelLayout.setVerticalGroup(
@@ -218,7 +228,9 @@ class CalendarPanel extends javax.swing.JPanel {
                     .addComponent(monthLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(yearDayLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(dayOfYearLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
         );
 
         add(datePanel, java.awt.BorderLayout.SOUTH);
@@ -255,6 +267,7 @@ class CalendarPanel extends javax.swing.JPanel {
     private javax.swing.JPanel clockPanel;
     private javax.swing.JLabel dateLabel;
     private javax.swing.JPanel datePanel;
+    private javax.swing.JLabel dayOfYearLabel;
     private javax.swing.JLabel monthLabel;
     private javax.swing.JPanel topPanel;
     private javax.swing.JLabel weekLabel;
