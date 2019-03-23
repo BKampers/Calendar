@@ -65,6 +65,7 @@ class CalendarPanel extends javax.swing.JPanel {
         clock.addNeedle(secondHand);
         clock.addRing(hourRing);
         clockPanel.add(clock);
+        yearProgressBar.setStringPainted(true);
     }
 
 
@@ -88,7 +89,10 @@ class CalendarPanel extends javax.swing.JPanel {
             monthLabel.setText(behavior.showMonth(calendar) ? formatter.monthText(getLocale()): "");
             yearLabel.setText(formatter.yearText());
             weekLabel.setText(formatter.weekText());
-            dayOfYearLabel.setText(formatter.dayOfYearText());
+            yearProgressBar.setForeground(Color.red);
+            yearProgressBar.setMaximum(calendar.getActualMaximum(Calendar.DAY_OF_YEAR));
+            yearProgressBar.setValue(calendar.get(Calendar.DAY_OF_YEAR));
+            yearProgressBar.setString(formatter.dayOfYearText());
             double minuteValue = minute + (double) second / secondMaximum;
             secondHand.setValue(second);
             minuteHand.setValue(minuteValue);
@@ -124,7 +128,7 @@ class CalendarPanel extends javax.swing.JPanel {
         dateLabel = new javax.swing.JLabel();
         monthLabel = new javax.swing.JLabel();
         yearDayLabel = new javax.swing.JLabel();
-        dayOfYearLabel = new javax.swing.JLabel();
+        yearProgressBar = new javax.swing.JProgressBar();
 
         setBorder(javax.swing.BorderFactory.createTitledBorder(name));
         setBounds(new java.awt.Rectangle(0, 0, 380, 340));
@@ -194,28 +198,32 @@ class CalendarPanel extends javax.swing.JPanel {
         yearDayLabel.setForeground(Style.DEFAULT_FOREGROUND);
         yearDayLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
-        dayOfYearLabel.setFont(getDefaultFont(10));
-        dayOfYearLabel.setForeground(Style.DEFAULT_FOREGROUND);
-        dayOfYearLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        dayOfYearLabel.setMinimumSize(new java.awt.Dimension(500, 16));
+        yearProgressBar.setFont(getDefaultFont(9));
+        yearProgressBar.setForeground(Style.DEFAULT_FOREGROUND);
+        yearProgressBar.setBounds(new java.awt.Rectangle(0, 0, 146, 30));
+        yearProgressBar.setMaximumSize(new java.awt.Dimension(32767, 30));
+        yearProgressBar.setMinimumSize(new java.awt.Dimension(10, 30));
+        yearProgressBar.setPreferredSize(new java.awt.Dimension(146, 30));
+        yearProgressBar.setRequestFocusEnabled(false);
+        yearProgressBar.setVerifyInputWhenFocusTarget(false);
 
         javax.swing.GroupLayout datePanelLayout = new javax.swing.GroupLayout(datePanel);
         datePanel.setLayout(datePanelLayout);
         datePanelLayout.setHorizontalGroup(
             datePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(datePanelLayout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(datePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(yearDayLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(datePanelLayout.createSequentialGroup()
-                        .addComponent(weekdayLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(dateLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(monthLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, datePanelLayout.createSequentialGroup()
-                        .addGap(0, 0, Short.MAX_VALUE)
-                        .addComponent(dayOfYearLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addContainerGap()
+                        .addGroup(datePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(yearDayLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(datePanelLayout.createSequentialGroup()
+                                .addComponent(weekdayLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 122, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(dateLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(monthLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 162, Short.MAX_VALUE))))
+                    .addComponent(yearProgressBar, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         datePanelLayout.setVerticalGroup(
@@ -228,9 +236,9 @@ class CalendarPanel extends javax.swing.JPanel {
                     .addComponent(monthLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(yearDayLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(dayOfYearLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(yearProgressBar, javax.swing.GroupLayout.PREFERRED_SIZE, 13, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         add(datePanel, java.awt.BorderLayout.SOUTH);
@@ -267,13 +275,13 @@ class CalendarPanel extends javax.swing.JPanel {
     private javax.swing.JPanel clockPanel;
     private javax.swing.JLabel dateLabel;
     private javax.swing.JPanel datePanel;
-    private javax.swing.JLabel dayOfYearLabel;
     private javax.swing.JLabel monthLabel;
     private javax.swing.JPanel topPanel;
     private javax.swing.JLabel weekLabel;
     private javax.swing.JLabel weekdayLabel;
     private javax.swing.JLabel yearDayLabel;
     private javax.swing.JLabel yearLabel;
+    private javax.swing.JProgressBar yearProgressBar;
     // End of variables declaration//GEN-END:variables
 
     private final SimpleClock clock = new SimpleClock();
