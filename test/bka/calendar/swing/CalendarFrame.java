@@ -6,12 +6,11 @@ package bka.calendar.swing;
 
 
 import bka.calendar.*;
+import bka.calendar.swing.Formatter;
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
-import java.lang.reflect.*;
+import java.awt.image.*;
 import java.util.*;
-import java.util.logging.*;
 
 
 public class CalendarFrame extends javax.swing.JFrame {
@@ -115,19 +114,9 @@ public class CalendarFrame extends javax.swing.JFrame {
     }
 
     
-    @SuppressWarnings({ "rawtypes", "unchecked" })
     private void setMacIcon(Calendar calendar) {
-        try {
-            Class applicationClass = Class.forName("com.apple.eawt.Application");
-            Method getApplication = applicationClass.getMethod("getApplication");
-            Object application = getApplication.invoke(null);
-            Method setDockIconImage = applicationClass.getMethod("setDockIconImage", Image.class);
-            Object[] imageParameter = new Object[] { createDefaultImage(calendar, 1024, null) };
-            setDockIconImage.invoke(application, imageParameter);
-        }
-        catch (ClassNotFoundException | NoSuchMethodException | IllegalAccessException | InvocationTargetException ex) {
-            Logger.getLogger(CalendarFrame.class.getName()).log(Level.INFO, "Mac dock icon set failed", ex);
-        }
+        MacPlatformAdapter platformAdapter = new MacPlatformAdapter();
+        platformAdapter.setIcon(createDefaultImage(calendar, 1024, null));
         setIconImage(createDefaultImage(calendar, 1024, Color.GRAY));
     }
     
@@ -228,19 +217,7 @@ public class CalendarFrame extends javax.swing.JFrame {
     }
     
     
-    private final MouseListener mouseListener =  new MouseListener() {
-
-        @Override
-        public void mouseClicked(MouseEvent evt) {
-        }
-
-        @Override
-        public void mousePressed(MouseEvent evt) {
-        }
-
-        @Override
-        public void mouseReleased(MouseEvent evt) {
-        }
+    private final MouseListener mouseListener =  new MouseAdapter() {
 
         @Override
         public void mouseEntered(MouseEvent evt) {
@@ -254,10 +231,6 @@ public class CalendarFrame extends javax.swing.JFrame {
             else if (selectedPanel == earthianPanel) {
                 selectedCalendar = earthianCalendar;
             }
-        }
-
-        @Override
-        public void mouseExited(MouseEvent evt) {
         }
         
     };
