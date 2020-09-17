@@ -57,28 +57,31 @@ class Formatter {
     
     String weekText() {
         int week = calendar.get(Calendar.WEEK_OF_YEAR);
-        if (week > 0) {
-            StringBuilder text = new StringBuilder();
-            if (bundle != null && bundle.containsKey(WEEK_PROPERTY)) {
-                text.append(bundle.getString(WEEK_PROPERTY));
-            }
-            else {
-                text.append("Week");
-            }
-            text.append(' ');
-            text.append(week);
-            if (week == calendar.getMinimum(Calendar.WEEK_OF_YEAR) && calendar.get(Calendar.MONTH) == calendar.getMaximum(Calendar.MONTH)) {
-                appendWeekYear(text, 1);
-            }
-            else if (week >= calendar.getMaximum(Calendar.WEEK_OF_YEAR) - 1 && calendar.get(Calendar.MONTH) == calendar.getMinimum(Calendar.MONTH)) {
-                appendWeekYear(text, -1);
-            }
-            return text.toString();
-        }
-        else {
+        if (week <= 0) {
             return "";
         }
+        if (calendar instanceof bka.calendar.FrenchRepublicanCalendar && week == calendar.getMaximum(Calendar.WEEK_OF_YEAR)) {
+        if (bundle != null && bundle.containsKey("ComplementaryDays"))
+            return bundle.getString(COMPLEMENTARY_DAYS_PROPERTY);
+        }
+        StringBuilder text = new StringBuilder();
+        if (bundle != null && bundle.containsKey(WEEK_PROPERTY)) {
+            text.append(bundle.getString(WEEK_PROPERTY));
+        }
+        else {
+            text.append("Week");
+        }
+        text.append(' ');
+        text.append(week);
+        if (week == calendar.getMinimum(Calendar.WEEK_OF_YEAR) && calendar.get(Calendar.MONTH) == calendar.getMaximum(Calendar.MONTH)) {
+            appendWeekYear(text, 1);
+        }
+        else if (week >= calendar.getMaximum(Calendar.WEEK_OF_YEAR) - 1 && calendar.get(Calendar.MONTH) == calendar.getMinimum(Calendar.MONTH)) {
+            appendWeekYear(text, -1);
+        }
+        return text.toString();
     }
+
 
     private void appendWeekYear(StringBuilder text, int offset) {
         text.append(" (");
@@ -134,6 +137,7 @@ class Formatter {
     
     private static final String NAME_PROPERTY = "Name";
     private static final String WEEK_PROPERTY = "Week";
+    private static final String COMPLEMENTARY_DAYS_PROPERTY = "ComplementaryDays";
     private static final String MONTH_PROPERTY = "Month";
     private static final String WEEKDAY_PROPERTY = "WeekDay";
     private static final String DAY_PROPERTY = "Day";
