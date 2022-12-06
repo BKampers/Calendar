@@ -6,20 +6,23 @@ package bka.calendar.swing;
 
 
 import bka.calendar.*;
-import bka.calendar.swing.Formatter;
+import bka.calendar.events.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.awt.image.*;
+import java.util.Timer;
 import java.util.*;
+import java.util.logging.*;
+import javax.swing.*;
 
 
 public class CalendarFrame extends javax.swing.JFrame {
 
-    
     public CalendarFrame() {
         gregorianPanel = new CalendarPanel(gregorianCalendar, getBehavior(gregorianCalendar));
         republicanPanel = new CalendarPanel(republicanCalendar, getBehavior(republicanCalendar));
         earthianPanel = new CalendarPanel(earthianCalendar, getBehavior(earthianCalendar));
+        earthianPanel.setSolarDecorator(new SolarDecorator(getSolarEventCalculator()));
         initComponents();
         calendarsPanel.add(gregorianPanel);
         calendarsPanel.add(republicanPanel);
@@ -31,7 +34,10 @@ public class CalendarFrame extends javax.swing.JFrame {
         selectedPanel = gregorianPanel;
         selectedCalendar = gregorianCalendar;
     }
-    
+
+    private static SolarEventCalculator getSolarEventCalculator() {
+        return new SolarEventCalculator(new Location(51.48080, 5.64965), TimeZone.getTimeZone("Europe/Amsterdam"));
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -72,34 +78,31 @@ public class CalendarFrame extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        }
-        catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(CalendarFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-
-
+        applyLookAndFeel("Nimbus");
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new CalendarFrame().setVisible(true);
-            }
+        EventQueue.invokeLater(() -> {
+            new CalendarFrame().setVisible(true);
         });
     }
-    
-    
+
+    /**
+     * Set the given look and feel
+     * If look and feel is not available, stay with the default look and feel.
+     * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
+     */
+    private static void applyLookAndFeel(String name) {
+        try {
+            UIManager.LookAndFeelInfo info
+                = Arrays.stream(UIManager.getInstalledLookAndFeels()).filter(i -> name.equals(i.getName())).findAny().orElse(null);
+            if (info != null) {
+                UIManager.setLookAndFeel(info.getClassName());
+            }
+        }
+        catch (ReflectiveOperationException | UnsupportedLookAndFeelException ex) {
+            Logger.getLogger(CalendarFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+    }
+
     private void setIcon(Calendar calendar) {
         String osName = System.getProperty("os.name");
         if (osName.contains("Mac")) {
@@ -112,15 +115,13 @@ public class CalendarFrame extends javax.swing.JFrame {
             setIconImage(createDefaultImage(calendar, 1024, null));
         }
     }
-
     
     private void setMacIcon(Calendar calendar) {
         MacPlatformAdapter platformAdapter = new MacPlatformAdapter();
         platformAdapter.setIcon(createDefaultImage(calendar, 1024, null));
         setIconImage(createDefaultImage(calendar, 1024, Color.GRAY));
     }
-    
-    
+
     private void setWindowsIcons(Calendar calendar) {
         ArrayList<Image> images = new ArrayList<>();
         images.add(createWindowsImage(calendar, 32));
@@ -128,7 +129,6 @@ public class CalendarFrame extends javax.swing.JFrame {
         setIconImages(images);
     }
 
-    
     private BufferedImage createDefaultImage(Calendar calendar, int size, Color textColor) {
         Behavior behavior = getBehavior(calendar);
         BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
@@ -148,15 +148,14 @@ public class CalendarFrame extends javax.swing.JFrame {
             graphics.setFont(new Font(Font.SANS_SERIF, Font.PLAIN, size / 16));
         }
         metrics = graphics.getFontMetrics();
-        Formatter formatter = new Formatter(calendar);
+        CalendarFormatter formatter = new CalendarFormatter(calendar);
         String text = (! behavior.isComplementaryDay(calendar)) ? formatter.monthText(selectedPanel.getLocale()) : formatter.yearDayText();
         x = (size - metrics.stringWidth(text)) / 2;
         graphics.setColor((textColor == null) ? Style.DEFAULT_FOREGROUND : textColor);
         graphics.drawString(text, x, size - size / 4);
         return image;
     }
-    
-    
+
     private BufferedImage createWindowsImage(Calendar calendar, int size) {
         BufferedImage image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = (Graphics2D) image.getGraphics();
@@ -171,7 +170,6 @@ public class CalendarFrame extends javax.swing.JFrame {
         return image;
     }
 
-    
     private static void drawImageBackground(Graphics2D graphics, int size) {
         int margin = size / 16;
         int innerSize = size - 2 * margin;
@@ -180,8 +178,7 @@ public class CalendarFrame extends javax.swing.JFrame {
         graphics.setColor(Color.GRAY);
         graphics.drawRect(margin, margin, innerSize, innerSize);
     }
-    
-    
+
     private static Behavior getBehavior(Calendar calendar) {
         if (calendar instanceof FrenchRepublicanCalendar) {
             return FRENCH_REPUBLICAN_BEHAVIOR;
@@ -193,7 +190,6 @@ public class CalendarFrame extends javax.swing.JFrame {
             return DEFAULT_BEHAVIOR;
         }
     }
-    
         
     private class UpdateTask extends TimerTask {
 
@@ -215,8 +211,8 @@ public class CalendarFrame extends javax.swing.JFrame {
         private int iconMonth;
 
     }
-    
-    
+
+
     private final MouseListener mouseListener =  new MouseAdapter() {
 
         @Override
@@ -388,13 +384,11 @@ public class CalendarFrame extends javax.swing.JFrame {
 
     private javax.swing.JPanel selectedPanel;
     private Calendar selectedCalendar;
-    
-    
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private final javax.swing.JPanel calendarsPanel = new javax.swing.JPanel();
     // End of variables declaration//GEN-END:variables
 
-    
     private final Calendar gregorianCalendar = new GregorianCalendar();
     private final Calendar republicanCalendar = new FrenchRepublicanCalendar();
     private final Calendar earthianCalendar = new EarthianCalendar();
@@ -405,13 +399,11 @@ public class CalendarFrame extends javax.swing.JFrame {
     
     private final Timer updateTimer = new Timer(UpdateTask.class.toString());
 
-
     private static final String DEFAULT_DATE_FORMAT = "%d/%02d/%02d";
     private static final String EARTHIAN_DATE_FORMAT = "%04d/%02d/%02d";
 
     private static final String DEFAULT_TIME_FORMAT = "%02d:%02d";
     private static final String CLASSIC_TIME_FORMAT = "%d:%02d %s";
     private static final String REPUBLICAN_TIME_FORMAT = "%d:%02d";
-
 
 }

@@ -8,17 +8,17 @@ package bka.calendar.swing;
 import java.util.*;
 import java.util.logging.*;
 
-class Formatter {
+class CalendarFormatter {
     
     
-    Formatter(Calendar calendar) {
+    CalendarFormatter(Calendar calendar) {
         this.calendar = calendar;
         ResourceBundle calendarBundle = null;
         try {
             calendarBundle = ResourceBundle.getBundle(calendar.getClass().getName());
         }
         catch (java.util.MissingResourceException ex) {
-            String className = Formatter.class.getName();
+            String className = CalendarFormatter.class.getName();
             Logger.getLogger(className).log(Level.FINER, className, ex);
         }
         bundle = calendarBundle;

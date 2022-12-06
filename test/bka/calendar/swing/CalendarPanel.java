@@ -6,112 +6,198 @@ package bka.calendar.swing;
 
 import bka.swing.clock.*;
 import java.awt.*;
+import java.time.*;
 import java.util.*;
 
 
 class CalendarPanel extends javax.swing.JPanel {
 
-
     CalendarPanel(Calendar calendar, Behavior behavior) {
-        this.calendar = calendar;
-        this.behavior = behavior;
+        this.calendar = Objects.requireNonNull(calendar);
+        this.behavior = Objects.requireNonNull(behavior);
         this.hourField = behavior.showNaturalDayClock() ? Calendar.HOUR_OF_DAY : Calendar.HOUR;
-        formatter = new Formatter(calendar);
+        formatter = new CalendarFormatter(calendar);
         name = formatter.nameText();
         hourMaximum = calendar.getMaximum(hourField) + 1;
         minuteMaximum = calendar.getMaximum(Calendar.MINUTE) + 1;
         secondMaximum = calendar.getMaximum(Calendar.SECOND) + 1;
+        hourHand = new SimpleNeedle(getCenter(), createHourScale());
+        minuteHand = new SimpleNeedle(getCenter(), new Scale(0, minuteMaximum));
+        secondHand = new SimpleNeedle(getCenter(), new Scale(0, secondMaximum));
         initComponents();
         setNameSize();
         clock.setDiameter(2 * CLOCK_RADIUS);
-        clock.setBackground(Color.WHITE);
-        Point center = new java.awt.Point(CLOCK_RADIUS, CLOCK_RADIUS);
-        Scale hourHandScale = new Scale();
-        hourHandScale.setValueRange(0, hourMaximum);
         hourHand.setLength(25);
         hourHand.setStroke(new BasicStroke(3, CLOCK_HAND_CAP, CLOCK_HAND_JOIN));
-        hourHand.setTurningPoint(center);
-        hourHand.setScale(hourHandScale);
-        Scale minuteHandScale = new Scale();
-        minuteHandScale.setValueRange(0, minuteMaximum);
         minuteHand.setLength(40);
         minuteHand.setStroke(new BasicStroke(2, CLOCK_HAND_CAP, CLOCK_HAND_JOIN));
-        minuteHand.setTurningPoint(center);
-        minuteHand.setScale(minuteHandScale);
-        Scale secondHandScale = new Scale();
-        secondHandScale.setValueRange(0, secondMaximum);
         secondHand.setLength(45);
-        secondHand.setTurningPoint(center);
-        secondHand.setScale(secondHandScale);
-        Scale hourValueScale = new Scale();
         double interval = (hourMaximum <= 12) ? 1.0 : 2.0;
-        if (behavior.showMidnightAsZero()) {
-            hourValueScale.setValueRange(0.0, hourMaximum - interval);
-            hourValueScale.setAngleRange(0.0, (hourMaximum - interval) / hourMaximum);
-        }
-        else {
-            hourValueScale.setValueRange(interval, hourMaximum);
-            hourValueScale.setAngleRange(interval / hourMaximum, 1.0);
-        }
-        SimpleValueRing hourRing = new SimpleValueRing();
-        hourRing.setInterval(interval);
-        hourRing.setScale(hourValueScale);
-        hourRing.setRadius(37);
-        hourRing.setCenter(center);
+        Scale hourValueScale = getHourValueScale(interval);
+        hourRing = new SimpleValueRing(getCenter(), HOUR_RING_RADIUS, hourValueScale, interval);
         hourRing.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-        hourRing.setColor(Color.BLUE);
         clock.addNeedle(hourHand);
         clock.addNeedle(minuteHand);
         clock.addNeedle(secondHand);
         clock.addRing(hourRing);
         clockPanel.add(clock);
         yearProgressBar.setStringPainted(true);
+        componentsInitialized = true;
     }
 
+    private Scale getHourValueScale(double interval) {
+        if (behavior.showMidnightAsZero()) {
+            return new Scale(0.0, hourMaximum - interval, 0.0, (hourMaximum - interval) / hourMaximum);
+        }
+        return new Scale(interval, hourMaximum, interval / hourMaximum, 1.0);
+    }
 
-    
+    public void setSolarDecorator(SolarDecorator solarDecorator) {
+        this.solarDecorator = solarDecorator;
+        if (solarDecorator != null) {
+            solarDecorator.initialize(calendarLocalDateTime());
+            clock.addRing(new ArcRing(getCenter(), DAYLIGHT_RING_RADIUS, createHourScale(), solarDecorator.getArcs()));
+        }
+    }
+
+    private Scale createHourScale() {
+        return new Scale(0, hourMaximum);
+    }
+
+    private Point getCenter() {
+        return new java.awt.Point(CLOCK_RADIUS, CLOCK_RADIUS);
+    }
+
     @Override
     public void repaint() {
         super.repaint();
-        if (calendar != null) {
-            calendar.setTimeInMillis(System.currentTimeMillis());
-            int month = calendar.get(Calendar.MONTH);
-            int dayOfMonth = calendar.get(Calendar.DATE);
-            int hour = calendar.get(hourField);
-            int minute = calendar.get(Calendar.MINUTE);
-            int second = calendar.get(Calendar.SECOND);
-            String dateString = Integer.toString(dayOfMonth);
-            dateLabel.setText(dateString);
-            dateLabel.setForeground(behavior.isComplementaryDay(calendar) ? Style.HOLYDAY_FOREGROUND : Style.DEFAULT_FOREGROUND);
-            yearDayLabel.setText(behavior.showDayNameOfYear(calendar) ? formatter.yearDayText() : "");
-            weekdayLabel.setText(behavior.showDayNameOfWeek(calendar) ? formatter.weekdayText(getLocale()) : "");
-            weekdayLabel.setForeground((behavior.isSabbath(calendar)) ? Style.HOLYDAY_FOREGROUND : Style.DEFAULT_FOREGROUND);
-            monthLabel.setText(behavior.showMonth(calendar) ? formatter.monthText(getLocale()): "");
-            yearLabel.setText(formatter.yearText());
-            weekLabel.setText(formatter.weekText());
-            yearProgressBar.setForeground(Color.red);
-            yearProgressBar.setMaximum(calendar.getActualMaximum(Calendar.DAY_OF_YEAR));
-            yearProgressBar.setValue(calendar.get(Calendar.DAY_OF_YEAR));
-            yearProgressBar.setString(formatter.dayOfYearText());
-            double minuteValue = minute + (double) second / secondMaximum;
-            secondHand.setValue(second);
-            minuteHand.setValue(minuteValue);
-            hourHand.setValue(hour + minuteValue / minuteMaximum);
-            clock.repaint();
-            datePanel.setToolTipText(String.format(behavior.getDateFormat(), calendar.get(Calendar.YEAR), month + 1, dayOfMonth));
-            if (behavior.showNaturalDayClock()) {
-                clockPanel.setToolTipText(String.format(behavior.getTimeFormat(), hour, minute));
-            }
-            else {
-                String ampm = (calendar.get(Calendar.AM_PM) == Calendar.AM) ? "AM" : "PM";
-                clockPanel.setToolTipText(String.format(behavior.getTimeFormat(), (hour == 0) ? 12 : hour, minute, ampm));
-            }
+        if (componentsInitialized) {
+            repaintComponents();
         }
     }
-    
 
-    /** This method is called from within the constructor to
-     * initialize the form.
+    private void repaintComponents() {
+        calendar.setTimeInMillis(System.currentTimeMillis());
+        int month = calendar.get(Calendar.MONTH);
+        int dayOfMonth = calendar.get(Calendar.DATE);
+        int hour = calendar.get(hourField);
+        int minute = calendar.get(Calendar.MINUTE);
+        int second = calendar.get(Calendar.SECOND);
+        String dateString = Integer.toString(dayOfMonth);
+        dateLabel.setText(dateString);
+        dateLabel.setForeground(behavior.isComplementaryDay(calendar) ? Style.HOLYDAY_FOREGROUND : Style.DEFAULT_FOREGROUND);
+        yearDayLabel.setText(behavior.showDayNameOfYear(calendar) ? formatter.yearDayText() : "");
+        weekdayLabel.setText(behavior.showDayNameOfWeek(calendar) ? formatter.weekdayText(getLocale()) : "");
+        weekdayLabel.setForeground((behavior.isSabbath(calendar)) ? Style.HOLYDAY_FOREGROUND : Style.DEFAULT_FOREGROUND);
+        monthLabel.setText(behavior.showMonth(calendar) ? formatter.monthText(getLocale()) : "");
+        yearLabel.setText(formatter.yearText());
+        weekLabel.setText(formatter.weekText());
+        yearProgressBar.setForeground(Color.red);
+        yearProgressBar.setMaximum(calendar.getActualMaximum(Calendar.DAY_OF_YEAR));
+        yearProgressBar.setValue(calendar.get(Calendar.DAY_OF_YEAR));
+        yearProgressBar.setString(formatter.dayOfYearText());
+        double minuteValue = minute + (double) second / secondMaximum;
+        secondHand.setValue(second);
+        minuteHand.setValue(minuteValue);
+        hourHand.setValue(hour + minuteValue / minuteMaximum);
+        setClockColors();
+        if (solarDecorator != null) {
+            solarDecorator.update(calendarLocalDateTime());
+        }
+        clock.repaint();
+        setDateToolTipText(month, dayOfMonth);
+        setTimeToolTipText(hour, minute);
+    }
+
+    private void setDateToolTipText(int month, int dayOfMonth) {
+        datePanel.setToolTipText(String.format(behavior.getDateFormat(), calendar.get(Calendar.YEAR), month + 1, dayOfMonth));
+    }
+
+    private void setTimeToolTipText(int hour, int minute) {
+        if (behavior.showNaturalDayClock()) {
+            clockPanel.setToolTipText(String.format(behavior.getTimeFormat(), hour, minute));
+        }
+        else {
+            String ampm = (calendar.get(Calendar.AM_PM) == Calendar.AM) ? "AM" : "PM";
+            clockPanel.setToolTipText(String.format(behavior.getTimeFormat(), (hour == 0) ? 12 : hour, minute, ampm));
+        }
+    }
+
+    private void setClockColors() {
+        if (solarDecorator != null) {
+            SolarDecorator.Event event = solarDecorator.upcomingEvent();
+            clock.setBackground(faceColor(event));
+            hourRing.setPaint(markerColor(event));
+            hourHand.setPaint(handColor(event));
+            minuteHand.setPaint(handColor(event));
+            secondHand.setPaint(handColor(event));
+        }
+        else {
+            clock.setBackground(Color.WHITE);
+            hourRing.setPaint(Color.BLUE);
+        }
+    }
+
+    private static Color faceColor(SolarDecorator.Event event) {
+        switch (event) {
+            case ASTRONIMICAL_SUNRISE:
+                return SolarDecorator.NIGHTTIME_COLOR;
+            case ASTRONOMICAL_SUNSET:
+            case NAUTICAL_SUNRISE:
+                return SolarDecorator.ASTRONOMICAL_TWILIGHT_COLOR;
+            case NAUTICAL_SUNSET:
+            case CIVIL_SUNRISE:
+                return SolarDecorator.NAUTICAL_TWILIGHT_COLOR;
+            case CIVIL_SUNSET:
+            case OFFICIAL_SUNRISE:
+                return SolarDecorator.CIVIL_TWILIGHT_COLOR;
+            case OFFICIAL_SUNSET:
+                return SolarDecorator.DAYTIME_COLOR;
+            default:
+                throw new IllegalStateException(event.name());
+        }
+    }
+
+    private static Color markerColor(SolarDecorator.Event event) {
+        switch (event) {
+            case ASTRONIMICAL_SUNRISE:
+                return SolarDecorator.NAUTICAL_TWILIGHT_COLOR;
+            case ASTRONOMICAL_SUNSET:
+            case NAUTICAL_SUNRISE:
+            case NAUTICAL_SUNSET:
+            case CIVIL_SUNRISE:
+            case CIVIL_SUNSET:
+            case OFFICIAL_SUNRISE:
+            case OFFICIAL_SUNSET:
+                return SolarDecorator.NIGHTTIME_COLOR;
+            default:
+                throw new IllegalStateException(event.name());
+        }
+    }
+
+    private static Color handColor(SolarDecorator.Event event) {
+        switch (event) {
+            case ASTRONIMICAL_SUNRISE:
+                return BRIGHT_HAND_COLOR;
+            case ASTRONOMICAL_SUNSET:
+            case NAUTICAL_SUNRISE:
+            case NAUTICAL_SUNSET:
+            case CIVIL_SUNRISE:
+            case CIVIL_SUNSET:
+            case OFFICIAL_SUNRISE:
+            case OFFICIAL_SUNSET:
+                return DARK_HAND_COLOR;
+            default:
+                throw new IllegalStateException(event.name());
+        }
+    }
+
+    private LocalDateTime calendarLocalDateTime() {
+        return Instant.ofEpochMilli(calendar.getTimeInMillis()).atZone(calendar.getTimeZone().toZoneId()).toLocalDateTime();
+    }
+
+    /**
+     * This method is called from within the constructor to     * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
      * always regenerated by the Form Editor.
      */
@@ -243,7 +329,6 @@ class CalendarPanel extends javax.swing.JPanel {
 
         add(datePanel, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
-   
 
     private void setNameSize() {
         if (name.isEmpty()) {
@@ -253,15 +338,13 @@ class CalendarPanel extends javax.swing.JPanel {
         }
     }
 
-    
     private Font getDefaultFont(int size) {
         return new Font(Style.DEFAULT_FONT_NAME, Font.PLAIN, size);
     }
 
-    
     private final Calendar calendar;
     private final Behavior behavior;
-    private final Formatter formatter;
+    private final CalendarFormatter formatter;
     private final String name;
     
     private final int hourField;
@@ -285,12 +368,21 @@ class CalendarPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     private final SimpleClock clock = new SimpleClock();
-    private final SimpleNeedle hourHand = new SimpleNeedle();
-    private final SimpleNeedle minuteHand = new SimpleNeedle();
-    private final SimpleNeedle secondHand = new SimpleNeedle();
-    
+    private final SimpleValueRing hourRing;
+    private final SimpleNeedle hourHand;
+    private final SimpleNeedle minuteHand;
+    private final SimpleNeedle secondHand;
+    private final boolean componentsInitialized;
+
+    private SolarDecorator solarDecorator;
+
     private static final int CLOCK_RADIUS = 50;
+    private static final int HOUR_RING_RADIUS = 37;
+    private static final int DAYLIGHT_RING_RADIUS = 25;
     private static final int CLOCK_HAND_CAP = BasicStroke.CAP_ROUND;
     private static final int CLOCK_HAND_JOIN = BasicStroke.JOIN_ROUND;
-        
+
+    private static final Color DARK_HAND_COLOR = Color.BLACK;
+    private static final Color BRIGHT_HAND_COLOR = Color.YELLOW.darker();
+
 }
