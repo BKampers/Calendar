@@ -195,7 +195,7 @@ public class SolarDecorator {
     private final SolarEventCalculator solarEventCalculator;
 
     private final TreeMap<LocalDateTime, Event> events = new TreeMap<>();
-    private final Map<Event, ArcRing.Arc> arcs = new HashMap<>();
+    private final TreeMap<Event, ArcRing.Arc> arcs = new TreeMap<>();
     private LocalDate arcDate;
 
     private static final BasicStroke ARC_STROKE = new BasicStroke(4f);
